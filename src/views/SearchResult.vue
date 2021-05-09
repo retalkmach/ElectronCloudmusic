@@ -1,5 +1,5 @@
 <template>
-  <ul v-if="searchResult.length != 1">
+  <ul v-if="searchResult.length !=0">
     <li v-for="item in searchResult" :key="item" v-on:click="playMusic(item.id)">
       <div class="title">{{ item.name }}</div>
       <div class="artists">
@@ -22,7 +22,7 @@ export default defineComponent({
   },
   data() {
     return {
-      searchResult: [Object],
+      searchResult: [],
     };
   },
   methods: {
@@ -47,6 +47,7 @@ ul {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
   margin-bottom: 80px;
+  padding: 0;
   li {
     display: contents;
     list-style: none;

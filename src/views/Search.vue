@@ -6,12 +6,13 @@
         id="search-bar"
         placeholder="搜索内容"
         v-model="keyword"
+        @keyup.enter="location(keyword)"
       />
-      <button id="search-button" @click="location"><div class="icon"></div></button>
+      <button id="search-button" @click="location(keyword)"><div class="icon"></div></button>
     </div>
     <div id="suggest" v-if="keyword.length">
       <ul>
-        <li v-for="item in suggestcontent" :key="item">{{ item.keyword }}</li>
+        <li v-for="item in suggestcontent" :key="item" @click="location(item.keyword)">{{ item.keyword }}</li>
       </ul>
     </div>
   </div>
@@ -42,8 +43,8 @@ export default defineComponent({
           return data;
         });
     },
-    location(){
-        router.push({name:'searchresult',params:{keyword:this.keyword}});
+    location(keyword:string){
+        router.push({name:'searchresult',params:{keyword:keyword}});
     }
   },
   watch: {

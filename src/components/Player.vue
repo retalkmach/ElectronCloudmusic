@@ -6,7 +6,7 @@
     /></router-link>
 
     <div id="change-playstatus-buttons">
-      <button id="prev" @click="updateCurrentMusic">
+      <button id="prev" @click="updateCurrentMusicWithoutPlay">
         <div class="icon"></div>
       </button>
       <button id="toggleplaystatus" class="play" @click="togglePlayStatus">
@@ -42,6 +42,9 @@ export default defineComponent({
   setup() {
     // this.updatePlayedProgress();
   },
+  mounted() {
+    this.updateCurrentMusicWithoutPlay();
+  },
   computed: {
     musicID() {
       return this.$store.state.musicID;
@@ -52,10 +55,10 @@ export default defineComponent({
       updateProgress: 0,
     };
   },
-  watch:{
-    musicID(){
+  watch: {
+    musicID() {
       this.updateCurrentMusic();
-    }
+    },
   },
   methods: {
     togglePlayStatus() {
@@ -73,8 +76,23 @@ export default defineComponent({
       }
     },
     async updateCurrentMusic() {
+      let btn = document.getElementById("toggleplaystatus");
+      let audioPlayer = document.querySelector("audio");
+      btn!.className = "pause";
+      await this.updateCurrentMusicWithoutPlay();
+      audioPlayer?.addEventListener("canplay", () => {
+        audioPlayer!.play();
+        this.updatePlayedProgress();
+      });
+      audioPlayer?.addEventListener("durationchange",()=>{
+        console.log("musicis loadding"+audioPlayer?.duration);        
+      });
+      audioPlayer?.addEventListener("canplaythrough",()=>{
+        console.log("music is loaded");        
+      })
+    },
+    async updateCurrentMusicWithoutPlay() {
       let id: number = this.$store.state.musicID;
-      console.log(id);
       axios.get(`http://127.0.0.1:5052/music?id=${id}`).then((res) => {
         console.log(res);
         let musicUrl = res.data.data.data[0].url;
@@ -108,7 +126,9 @@ export default defineComponent({
       this.updateProgress = window.setInterval(() => {
         duration = document.querySelector("audio")!.duration;
         //当获取不到正确的音频链接时，会出现定时器异常的问题，通过下面的判断解决该问题
-        if(isNaN(duration)){clearInterval(this.updateProgress)};
+        if (isNaN(duration)) {
+          clearInterval(this.updateProgress);
+        }
         let currentTime = document.querySelector("audio")!.currentTime;
         let playedProgressLength = (currentTime / duration) * progressBarLength;
         playedProgress!.style.width = playedProgressLength + "px";
@@ -121,7 +141,7 @@ export default defineComponent({
       let playedProgress = <HTMLElement>(
         document.querySelector("#played-progress-bar")
       );
-      playedProgress.style.width = '0';
+      playedProgress.style.width = "0";
       document.querySelector("#played-duration")!.innerHTML = "0:00";
       clearInterval(this.updateProgress);
     },
