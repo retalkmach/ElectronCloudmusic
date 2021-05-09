@@ -1,7 +1,10 @@
 <template>
   <div id="container">
     <audio src=""></audio>
-    <img src="@/assets/unknowAlbum.png" alt="" id="album-pic" />
+    <router-link to="/playerfullscreen"
+      ><img src="@/assets/images/unknowAlbum.png" alt="" id="album-pic"
+    /></router-link>
+
     <div id="change-playstatus-buttons">
       <button id="prev" @click="updateCurrentMusic">
         <div class="icon"></div>
@@ -29,16 +32,30 @@
   </div>
 </template>
 <script lang="ts">
-import { Vue } from "node_modules/vue-class-component/dist/vue-class-component";
+import { Vue } from "vue-class-component";
 import { defineComponent } from "vue";
 import { Store } from "vuex";
 import axios from "axios";
+// const request = require("@/request")
+
 export default defineComponent({
-  setup() {},
+  setup() {
+    // this.updatePlayedProgress();
+  },
   computed: {
     musicID() {
       return this.$store.state.musicID;
     },
+  },
+  data() {
+    return {
+      updateProgress: 0,
+    };
+  },
+  watch:{
+    musicID(){
+      this.updateCurrentMusic();
+    }
   },
   methods: {
     togglePlayStatus() {
@@ -48,12 +65,14 @@ export default defineComponent({
       if (playStatus) {
         btn!.className = "pause";
         audioPlayer!.play();
+        this.updatePlayedProgress();
       } else {
         btn!.className = "play";
         audioPlayer?.pause();
+        clearInterval(this.updateProgress);
       }
     },
-    updateCurrentMusic() {
+    async updateCurrentMusic() {
       let id: number = this.$store.state.musicID;
       console.log(id);
       axios.get(`http://127.0.0.1:5052/music?id=${id}`).then((res) => {
@@ -74,26 +93,37 @@ export default defineComponent({
         document.querySelector("#artist-name")!.innerHTML =
           res.data.data.songs[0].ar[0].name;
         document.querySelector("#music-duration")!.innerHTML = musicDuration;
-        this.updatePlayedProgress(res.data.data.songs[0].dt);
+        // this.updatePlayedProgress();
+        this.resetPlayedProgress();
       });
     },
-    updatePlayedProgress(duration: number) {
+    updatePlayedProgress() {
+      let duration: number;
       let playedProgress = <HTMLElement>(
         document.querySelector("#played-progress-bar")
       );
       let progressBarLength = document.querySelector("#progress-bar")!
         .clientWidth;
       let playedDuration = document.querySelector("#played-duration");
-      setInterval(() => {
+      this.updateProgress = window.setInterval(() => {
+        duration = document.querySelector("audio")!.duration;
+        //当获取不到正确的音频链接时，会出现定时器异常的问题，通过下面的判断解决该问题
+        if(isNaN(duration)){clearInterval(this.updateProgress)};
         let currentTime = document.querySelector("audio")!.currentTime;
-        let playedProgressLength =
-          ((currentTime * 1000) / duration) * progressBarLength;
+        let playedProgressLength = (currentTime / duration) * progressBarLength;
         playedProgress!.style.width = playedProgressLength + "px";
-        console.log(playedProgressLength);
         playedDuration!.innerHTML = `${Math.floor(
           currentTime / 60
         )}:${Math.floor(currentTime % 60)}`;
       }, 250);
+    },
+    resetPlayedProgress() {
+      let playedProgress = <HTMLElement>(
+        document.querySelector("#played-progress-bar")
+      );
+      playedProgress.style.width = '0';
+      document.querySelector("#played-duration")!.innerHTML = "0:00";
+      clearInterval(this.updateProgress);
     },
   },
 });
@@ -101,15 +131,18 @@ export default defineComponent({
 
 <style lang="scss" scoped>
 #container {
-  position: relative;
+  position: fixed;
+  bottom: 0;
   height: 80px;
   width: 100%;
+  background-color: white;
   border-top: 1px solid lightgray;
 }
 #album-pic {
   position: absolute;
   left: 0;
   height: 100%;
+  aspect-ratio: 1/1;
 }
 #change-playstatus-buttons {
   display: flex;
