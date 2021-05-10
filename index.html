@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ElectronCloudMusic</title>
+    <style>
+        body,
+        div,
+        p {
+            margin: 0;
+            padding: 0;
+        }
+        
+        #app {
+            font-family: Avenir, Helvetica, Arial, sans-serif;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            text-align: center;
+            color: #2c3e50;
+        }
+        
+        #nav {
+            padding: 25px;
+        }
+        
+        #nav a {
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        #nav a.router-link-exact-active {
+            color: #42b983;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div id="nav">
+            <router-link to="/">Home</router-link> |
+            <router-link to="/test">Test</router-link> |
+            <router-link to="/search">Search</router-link>
+        </div>
+        <router-view />
+        <player />
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+</body>
+
+</html>

@@ -1,13 +1,30 @@
 <template>
-  <ul v-if="searchResult.length !=0">
-    <li v-for="item in searchResult" :key="item" v-on:click="playMusic(item.id)">
-      <div class="title">{{ item.name }}</div>
+  <div id="search-box">
+    <input
+      type="text"
+      v-model="keyword"
+      @keyup.enter="updateSearchResult(keyword)"
+    />
+  </div>
+  <ul v-if="searchResult.length != 0">
+    <li
+      v-for="(item, index) in searchResult"
+      :key="item"
+      v-on:click="playMusic(item.id)"
+      v-bind:class="autoAddClass(index)"
+    >
+      <div class="title">
+        {{ item.name }}
+      </div>
       <div class="artists">
         <span v-for="artist in item.artists" :key="artist"
           >{{ artist.name }}
         </span>
       </div>
-      <div class="album">{{ item.album.name }}</div>
+      <div class="album">
+        {{ item.album.name }}
+      </div>
+      <!-- <div class="index">{{autoAddClass(index)}} </div> -->
     </li>
   </ul>
 </template>
@@ -15,14 +32,16 @@
 import { Vue } from "vue-class-component";
 import { defineComponent } from "vue";
 import { Store } from "vuex";
+import router from "@/router/index";
 import axios from "axios";
 export default defineComponent({
   created() {
-    this.search();  
+    this.search();
   },
   data() {
     return {
       searchResult: [],
+      keyword: "",
     };
   },
   methods: {
@@ -36,9 +55,16 @@ export default defineComponent({
           this.searchResult = res.data.data.result.songs;
         });
     },
-    playMusic(id:number){
-        this.$store.state.musicID = id;
-    }
+    playMusic(id: number) {
+      this.$store.state.musicID = id;
+    },
+    updateSearchResult(keyword: string) {
+      router.push({ name: "searchresult", params: { keyword: keyword } });
+      this.search();
+    },
+    autoAddClass(index: number) {
+      return index % 2 == 0 ? "bg" : "";
+    },
   },
 });
 </script>
@@ -68,5 +94,13 @@ ul {
       content: none;
     }
   }
+}
+#search-box {
+  input {
+    width: 256px;
+  }
+}
+.bg>div{
+  background-color: #eeeeee;
 }
 </style>

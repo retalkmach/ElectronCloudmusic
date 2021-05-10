@@ -4,22 +4,24 @@
     <router-link to="/test">Test</router-link> |
     <router-link to="/search">Search</router-link>
   </div>
-  <router-view/>
-  <player/>
+  <router-view />
+  <player />
 </template>
 
 <script>
-  import player from '@/components/Player'
-  export default {
-    name: 'app',
-    components:{
-      player
-    }
-  }
+import player from "@/components/Player";
+export default {
+  name: "app",
+  components: {
+    player,
+  },
+};
 </script>
 
 <style lang="scss">
-body,div,p{
+body,
+div,
+p {
   margin: 0;
   padding: 0;
 }
@@ -32,7 +34,7 @@ body,div,p{
 }
 
 #nav {
-  padding: 30px;
+  padding: 25px;
 
   a {
     font-weight: bold;
@@ -43,4 +45,5 @@ body,div,p{
     }
   }
 }
+
 </style>

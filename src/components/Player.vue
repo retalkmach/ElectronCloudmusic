@@ -4,7 +4,6 @@
     <router-link to="/playerfullscreen"
       ><img src="@/assets/images/unknowAlbum.png" alt="" id="album-pic"
     /></router-link>
-
     <div id="change-playstatus-buttons">
       <button id="prev" @click="updateCurrentMusicWithoutPlay">
         <div class="icon"></div>
@@ -29,6 +28,13 @@
         <div id="played-progress-bar"></div>
       </div>
     </div>
+    <div id="controller">
+      <button id="list" @click="toggleShowPlaylist"><img src="../assets/images/bofangliebiao.png" alt="" class="icon"></button>
+    </div>
+    <div id="playlist" v-if="showPlaylist">
+      <h5>播放列表</h5>
+      <li v-for="music in playlist" :key="music">{{music.name}}</li>
+    </div>
   </div>
 </template>
 <script lang="ts">
@@ -49,10 +55,14 @@ export default defineComponent({
     musicID() {
       return this.$store.state.musicID;
     },
+    playlist(){
+      return this.$store.state.playlist;
+    }
   },
   data() {
     return {
       updateProgress: 0,
+      showPlaylist:false
     };
   },
   watch: {
@@ -84,11 +94,13 @@ export default defineComponent({
         audioPlayer!.play();
         this.updatePlayedProgress();
       });
-      audioPlayer?.addEventListener("durationchange",()=>{
-        console.log("musicis loadding"+audioPlayer?.duration);        
-      });
-      audioPlayer?.addEventListener("canplaythrough",()=>{
-        console.log("music is loaded");        
+      //addplaylist
+      axios.get(`http://127.0.0.1:5052/music_detail?ids=${this.musicID}`).then(res=>{
+        let newMusicInfo = {
+          id:this.musicID,
+          name: res.data.data.songs[0].name
+        }
+        this.playlist.push(newMusicInfo);
       })
     },
     async updateCurrentMusicWithoutPlay() {
@@ -145,6 +157,9 @@ export default defineComponent({
       document.querySelector("#played-duration")!.innerHTML = "0:00";
       clearInterval(this.updateProgress);
     },
+    toggleShowPlaylist(){
+      this.showPlaylist = !this.showPlaylist;
+    }
   },
 });
 </script>
@@ -207,7 +222,7 @@ export default defineComponent({
   position: absolute;
   top: 10px;
   left: 230px;
-  width: calc(100vw - 80px - 150px - 20px);
+  width: calc(100vw - 300px);
   height: 60px;
   #music-info {
     width: 100%;
@@ -232,6 +247,45 @@ export default defineComponent({
       background-color: #42b983;
       transition: 0.25s linear;
     }
+  }
+}
+#controller{
+  position: absolute;
+  display: flex;
+  top: 0;
+  right: 0;
+  width: 50px;
+  height: 100%;
+  justify-content: center;
+  align-items: center;
+  button{
+    width: 26px;
+    height: 26px;
+    background: none;
+    border: none;
+    .icon{
+      width: 26px;
+      height: 26px;
+    }
+  }
+}
+#playlist{
+  position: absolute;
+  bottom: 81px;
+  right: 0;
+  width: 256px;
+  padding: 2px 5px;
+  box-shadow: 1px 1px 1px 1px lightgray;
+  border-radius: 2px;
+  background-color: white;
+  h5{
+    margin: 5px 0;
+    text-align: center;
+  }
+  li{
+    margin: 3px 0;
+    list-style: none;
+    text-align: left;
   }
 }
 #toggleplaystatus.play {
@@ -273,5 +327,8 @@ export default defineComponent({
     60% 75%,
     70% 75%
   );
+}
+#list>.icon{
+  clip-path: polygon(10% 25%,90% 25%,90% 35%, 10% 35%, 10);
 }
 </style>

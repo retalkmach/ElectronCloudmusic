@@ -7,6 +7,7 @@
         placeholder="搜索内容"
         v-model="keyword"
         @keyup.enter="location(keyword)"
+        autocomplete="off"
       />
       <button id="search-button" @click="location(keyword)"><div class="icon"></div></button>
     </div>
