@@ -86,12 +86,9 @@ ul {
       overflow: hidden;
       white-space: nowrap;
     }
-    .artists > span::after {
+    .artists>span:not(:last-of-type)::after{
       content: "/";
       margin: 0 2px;
-    }
-    .artists > span:last-of-type::after {
-      content: none;
     }
   }
 }
@@ -100,7 +97,7 @@ ul {
     width: 256px;
   }
 }
-.bg>div{
+.bg > div {
   background-color: #eeeeee;
 }
 </style>

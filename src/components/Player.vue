@@ -5,10 +5,14 @@
       ><img src="@/assets/images/unknowAlbum.png" alt="" id="album-pic"
     /></router-link>
     <div id="change-playstatus-buttons">
-      <button id="prev" @click="updateCurrentMusicWithoutPlay">
+      <button id="prev" @click="updateMusicInfo">
         <div class="icon"></div>
       </button>
-      <button id="toggleplaystatus" class="play" @click="togglePlayStatus">
+      <button
+        id="toggle-play-status"
+        class="play"
+        @click="DOMArray[3].paused ? play() : pause()"
+      >
         <div class="left"></div>
         <div class="right"></div>
       </button>
@@ -19,7 +23,10 @@
     <div id="player-info">
       <p id="music-info">
         <span class="left"
-          ><span id="music-name"></span> - <span id="artist-name"></span></span
+          ><span id="music-name"></span> -
+          <span id="artist-name"
+            ><span v-for="artist in artists" :key="artist">{{ artist }} </span>
+          </span></span
         ><span class="right"
           ><span id="played-duration"></span> / <span id="music-duration"></span
         ></span>
@@ -29,11 +36,13 @@
       </div>
     </div>
     <div id="controller">
-      <button id="list" @click="toggleShowPlaylist"><img src="../assets/images/bofangliebiao.png" alt="" class="icon"></button>
+      <button id="list" @click="toggleShowPlaylist">
+        <img src="../assets/images/bofangliebiao.png" alt="" class="icon" />
+      </button>
     </div>
     <div id="playlist" v-if="showPlaylist">
       <h5>播放列表</h5>
-      <li v-for="music in playlist" :key="music">{{music.name}}</li>
+      <li v-for="music in playlist" :key="music">{{ music.name }}</li>
     </div>
   </div>
 </template>
@@ -46,120 +55,134 @@ import axios from "axios";
 
 export default defineComponent({
   setup() {
-    // this.updatePlayedProgress();
+    // this.updatePlayedInfo();
   },
   mounted() {
-    this.updateCurrentMusicWithoutPlay();
+    this.init();
+    this.updateMusicInfo();
   },
   computed: {
     musicID() {
       return this.$store.state.musicID;
     },
-    playlist(){
+    playlist() {
       return this.$store.state.playlist;
-    }
+    },
   },
   data() {
     return {
-      updateProgress: 0,
-      showPlaylist:false
+      updateProgressInterval: 0,
+      updatePlayedDurationInterval: 2,
+      currentTime: 0,
+      showPlaylist: false,
+      DOMArray: [Object as any],
+      artists: [""],
     };
   },
   watch: {
     musicID() {
-      this.updateCurrentMusic();
+      this.playMusic();
     },
   },
   methods: {
-    togglePlayStatus() {
-      let btn = document.getElementById("toggleplaystatus");
-      let audioPlayer = document.querySelector("audio");
-      let playStatus = audioPlayer?.paused;
-      if (playStatus) {
-        btn!.className = "pause";
-        audioPlayer!.play();
-        this.updatePlayedProgress();
-      } else {
-        btn!.className = "play";
-        audioPlayer?.pause();
-        clearInterval(this.updateProgress);
-      }
-    },
-    async updateCurrentMusic() {
-      let btn = document.getElementById("toggleplaystatus");
-      let audioPlayer = document.querySelector("audio");
-      btn!.className = "pause";
-      await this.updateCurrentMusicWithoutPlay();
-      audioPlayer?.addEventListener("canplay", () => {
-        audioPlayer!.play();
-        this.updatePlayedProgress();
+    playMusic() {
+      this.updateMusicInfo();
+      this.DOMArray[3].addEventListener("canplay", () => {
+        this.DOMArray[3].play();
       });
-      //addplaylist
-      axios.get(`http://127.0.0.1:5052/music_detail?ids=${this.musicID}`).then(res=>{
-        let newMusicInfo = {
-          id:this.musicID,
-          name: res.data.data.songs[0].name
-        }
-        this.playlist.push(newMusicInfo);
-      })
     },
-    async updateCurrentMusicWithoutPlay() {
-      let id: number = this.$store.state.musicID;
+    updateMusicInfo() {
+      let id: number = this.musicID;
+      //preset played duration
+      this.DOMArray[6].innerText = "0:00";
+      //update player music address
       axios.get(`http://127.0.0.1:5052/music?id=${id}`).then((res) => {
-        console.log(res);
-        let musicUrl = res.data.data.data[0].url;
-        document.querySelector("audio")?.setAttribute("src", musicUrl);
+        this.DOMArray[3].setAttribute("src", res.data.data.data[0].url);
       });
       axios.get(`http://127.0.0.1:5052/music_detail?ids=${id}`).then((res) => {
-        console.log(res);
-        let musicDuration = `${Math.floor(
-          res.data.data.songs[0].dt / 1000 / 60
-        )}:${Math.ceil((res.data.data.songs[0].dt / 1000) % 60)}`;
-        document
-          .querySelector("#album-pic")
-          ?.setAttribute("src", res.data.data.songs[0].al.picUrl);
-        document.querySelector("#music-name")!.innerHTML =
-          res.data.data.songs[0].name;
-        document.querySelector("#artist-name")!.innerHTML =
-          res.data.data.songs[0].ar[0].name;
-        document.querySelector("#music-duration")!.innerHTML = musicDuration;
-        // this.updatePlayedProgress();
-        this.resetPlayedProgress();
+        let data = res.data.data.songs[0];
+        this.DOMArray[4].innerText = data.name;
+        this.artists = [];
+        for (let artist of data.ar) {
+          this.artists.push(artist.name);
+        }
+        this.DOMArray[7].innerText = `${Math.floor(
+          data.dt / 1000 / 60
+        )}:${this.autoAddZero(Math.ceil((data.dt / 1000) % 60))}`;
+        this.DOMArray[10].setAttribute("src", data.al.picUrl);
       });
     },
-    updatePlayedProgress() {
-      let duration: number;
-      let playedProgress = <HTMLElement>(
-        document.querySelector("#played-progress-bar")
-      );
-      let progressBarLength = document.querySelector("#progress-bar")!
-        .clientWidth;
-      let playedDuration = document.querySelector("#played-duration");
-      this.updateProgress = window.setInterval(() => {
-        duration = document.querySelector("audio")!.duration;
-        //当获取不到正确的音频链接时，会出现定时器异常的问题，通过下面的判断解决该问题
-        if (isNaN(duration)) {
-          clearInterval(this.updateProgress);
-        }
-        let currentTime = document.querySelector("audio")!.currentTime;
-        let playedProgressLength = (currentTime / duration) * progressBarLength;
-        playedProgress!.style.width = playedProgressLength + "px";
-        playedDuration!.innerHTML = `${Math.floor(
-          currentTime / 60
-        )}:${Math.floor(currentTime % 60)}`;
-      }, 250);
-    },
-    resetPlayedProgress() {
-      let playedProgress = <HTMLElement>(
-        document.querySelector("#played-progress-bar")
-      );
-      playedProgress.style.width = "0";
-      document.querySelector("#played-duration")!.innerHTML = "0:00";
-      clearInterval(this.updateProgress);
-    },
-    toggleShowPlaylist(){
+    toggleShowPlaylist() {
       this.showPlaylist = !this.showPlaylist;
-    }
+    },
+    autoAddZero(num: number) {
+      return num > 9 ? num : `0${num}`;
+    },
+    play() {
+      this.DOMArray[3].play();
+    },
+    pause() {
+      this.DOMArray[3].pause();
+    },
+    init() {
+      let togglePlayStatus = document.querySelector("#toggle-play-status");
+      let prev = document.querySelector("#prev");
+      let next = document.querySelector("#next");
+      let musicPlayer = document.querySelector("audio");
+      let musicName = document.querySelector("#music-name");
+      let artistName = document.querySelector("#artist-name");
+      let playedDuration = document.querySelector("#played-duration");
+      let musicDuration = document.querySelector("#music-duration");
+      let progressBar = document.querySelector("#progress-bar");
+      let playedProgress = document.querySelector("#played-progress-bar");
+      let albumPic = document.querySelector("#album-pic");
+      let playlist = document.querySelector("#playlist");
+      //pop old data
+      this.DOMArray.pop();
+      // push DOM object
+      this.DOMArray.push(togglePlayStatus);
+      this.DOMArray.push(prev);
+      this.DOMArray.push(next);
+      this.DOMArray.push(musicPlayer);
+      this.DOMArray.push(musicName);
+      this.DOMArray.push(artistName);
+      this.DOMArray.push(playedDuration);
+      this.DOMArray.push(musicDuration);
+      this.DOMArray.push(progressBar);
+      this.DOMArray.push(playedProgress);
+      this.DOMArray.push(albumPic);
+      this.DOMArray.push(playlist);
+      //check this function
+      console.log(this.DOMArray);
+      //get data
+      let duration: number = 0;
+      let progressBarLength = this.DOMArray[8].clientWidth;
+      window.addEventListener("resize", () => {
+        progressBarLength = this.DOMArray[8].clientWidth;
+      });
+      //add player events
+      this.DOMArray[3].addEventListener("durationchange", () => {
+        duration = this.DOMArray[3].duration;
+      });
+      this.DOMArray[3].addEventListener("timeupdate", () => {
+        this.currentTime = this.DOMArray[3].currentTime;
+        this.DOMArray[6].innerText = `${Math.floor(
+          this.currentTime / 60
+        )}:${this.autoAddZero(Math.ceil(this.currentTime % 60))}`;
+        this.DOMArray[9].style.width =
+          (this.currentTime / duration) * progressBarLength + "px";
+      });
+      this.DOMArray[3].addEventListener("pause", () => {
+        this.DOMArray[0].className = "play";
+      });
+      this.DOMArray[3].addEventListener("play", () => {
+        this.DOMArray[0].className = "pause";
+      });
+      // this.DOMArray[3].addEventListener("canplay", () => {
+      //   console.log("can play");
+      // });
+      this.DOMArray[3].addEventListener("ended", () => {});
+    },
   },
 });
 </script>
@@ -170,7 +193,8 @@ export default defineComponent({
   bottom: 0;
   height: 80px;
   width: 100%;
-  background-color: white;
+  // background-color: white;
+  backdrop-filter: blur(35px);
   border-top: 1px solid lightgray;
 }
 #album-pic {
@@ -206,7 +230,7 @@ export default defineComponent({
     height: 28px;
     margin: 2px;
   }
-  #toggleplaystatus {
+  #toggle-play-status {
     width: 40px;
     height: 40px;
     div {
@@ -228,11 +252,24 @@ export default defineComponent({
     width: 100%;
     .left {
       position: absolute;
-      left: 10px;
+      left: 5px;
+      span{
+        max-width: 250px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      #artist-name {
+        color: gray;
+        span:not(:last-of-type)::after {
+          content: "/";
+          margin: 0 2px;
+        }
+      }
     }
     .right {
       position: absolute;
-      right: 10px;
+      right: 5px;
     }
   }
   #progress-bar {
@@ -249,7 +286,7 @@ export default defineComponent({
     }
   }
 }
-#controller{
+#controller {
   position: absolute;
   display: flex;
   top: 0;
@@ -258,18 +295,18 @@ export default defineComponent({
   height: 100%;
   justify-content: center;
   align-items: center;
-  button{
+  button {
     width: 26px;
     height: 26px;
     background: none;
     border: none;
-    .icon{
+    .icon {
       width: 26px;
       height: 26px;
     }
   }
 }
-#playlist{
+#playlist {
   position: absolute;
   bottom: 81px;
   right: 0;
@@ -278,17 +315,17 @@ export default defineComponent({
   box-shadow: 1px 1px 1px 1px lightgray;
   border-radius: 2px;
   background-color: white;
-  h5{
+  h5 {
     margin: 5px 0;
     text-align: center;
   }
-  li{
+  li {
     margin: 3px 0;
     list-style: none;
     text-align: left;
   }
 }
-#toggleplaystatus.play {
+#toggle-play-status.play {
   .left {
     clip-path: polygon(50% 25%, 100% 40%, 100% 60%, 50% 75%);
   }
@@ -296,12 +333,22 @@ export default defineComponent({
     clip-path: polygon(0 40%, 50% 50%, 50% 50%, 0 60%);
   }
 }
-#toggleplaystatus.pause {
+#toggle-play-status.pause {
   .left {
     clip-path: polygon(50% 25%, 80% 25%, 80% 75%, 50% 75%);
   }
   .right {
     clip-path: polygon(20% 25%, 50% 25%, 50% 75%, 20% 75%);
+  }
+}
+#toggle-play-status.cache {
+  background-image: url(../assets/images/loading.png);
+  animation: rotate 3s linear infinite;
+  .left {
+    display: none;
+  }
+  .right {
+    display: none;
   }
 }
 #prev > .icon {
@@ -328,7 +375,13 @@ export default defineComponent({
     70% 75%
   );
 }
-#list>.icon{
-  clip-path: polygon(10% 25%,90% 25%,90% 35%, 10% 35%, 10);
+#list > .icon {
+  clip-path: polygon(10% 25%, 90% 25%, 90% 35%, 10% 35%, 10);
+}
+
+@keyframes rotate {
+  100% {
+    transform: rotate(360deg);
+  }
 }
 </style>

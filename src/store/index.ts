@@ -5,8 +5,10 @@ export default createStore({
     musicID: 488388943,
     playlist:[{
       id:488388943,
-      name:"光"
-    }]
+      name:"光",
+      artist:"當山みれい"
+    }],
+    playlistCursor:0
   },
   mutations: {
   },

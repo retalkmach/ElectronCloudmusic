@@ -120,4 +120,17 @@ export default defineComponent({
   z-index: -1;
   filter: blur(15px);
 }
+//美化播放页滚动条样式
+::-webkit-scrollbar{
+  width: 12px;
+  height: auto;
+  background: none;
+}
+::-webkit-scrollbar-button{
+  display: none;
+}
+::-webkit-scrollbar-thumb{
+  border-radius: 6px;
+  background-color: #dddddd44;
+}
 </style>
