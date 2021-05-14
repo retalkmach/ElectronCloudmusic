@@ -26,7 +26,7 @@ export default defineComponent({
   },
   data() {
     return {
-      lyric: [{ time: "", content: "" }],
+      lyric: [Object as any],
       rowlyric: Object as any,
     };
   },
@@ -34,11 +34,17 @@ export default defineComponent({
     musicID() {
       return this.$store.state.musicID;
     },
+    currentTime(){
+      return this.$store.state.currentTime;
+    }
   },
   watch: {
     musicID() {
       this.updateCurrentMusic();
     },
+    currentTime(){
+      this.updateLyric();
+    }
   },
   methods: {
     updateCurrentMusic() {
@@ -65,19 +71,47 @@ export default defineComponent({
     progressLyric() {
       //check this music is puremusic?
       if (this.rowlyric.nolyric) {
-        let obj = { time: "0", content: "纯音乐，请欣赏" };
+        let obj = { time: 0, content: "纯音乐，请欣赏" };
         this.lyric.push(obj);
         return false;
       }
       let temp: string = this.rowlyric.lrc.lyric;
       let lyricSliced = temp.split("\n");
       for (let i = 0; i < lyricSliced.length; i++) {
-        let tempTime = lyricSliced[i].slice(0, lyricSliced[i].indexOf("]") + 1);
+        let tempTime = lyricSliced[i].slice(1, lyricSliced[i].indexOf("]"));
         let tempContent = lyricSliced[i].slice(lyricSliced[i].indexOf("]") + 1);
-        let tempObj = { time: tempTime, content: tempContent };
+        let tempObj = { time: this.parseTime(tempTime), content: tempContent };
         this.lyric.push(tempObj);
       }
     },
+    parseTime(time:string){
+      let mins = parseInt(time.slice(0,time.indexOf(":")));
+      let sec = parseInt(time.slice(time.indexOf(":")+1,time.indexOf(".")));
+      let mili = parseInt(time.slice(time.indexOf(".")+1));
+      return mins*60+sec+mili*0.001;
+    },
+    updateLyric(){
+      let time = this.currentTime;
+      for(let i=0;i<this.lyric.length;i++){
+        if(this.lyric[i].time<time&&this.lyric[i+1].time>time){
+          let DOMS = document.querySelectorAll("#lyric li");
+          DOMS.forEach(DOM =>{
+            DOM.className = "";
+          })
+          DOMS[i].className = "current";
+          this.scrollLyric(i);
+          break;
+        }
+      }      
+    },
+    scrollLyric(i:number){
+      let DOM = <HTMLElement> document.querySelectorAll("#lyric li")[i];
+      let ul = <HTMLElement>document.querySelector("#lyric ul");
+      let offset = DOM.offsetTop;
+      offset>300?ul.style.top = -offset + 100+"px":false;
+      // console.log(offset);
+      // console.log(ul.scrollTop);
+    }
   },
 });
 </script>
@@ -100,14 +134,21 @@ export default defineComponent({
   overflow: scroll;
   overflow-x: hidden;
   ul {
+    position: relative;
     max-width: 45vh;
     padding: 0;
+    scroll-snap-type: y mandatory;
+    transition: linear 0.35s;
     li {
       // height: 24px;
       max-width: 45vh;
       margin: 4px 0;
       list-style: none;
       line-height: 22px;
+      scroll-snap-align: start;
+    }
+    li.current{
+      color: lightsalmon;
     }
   }
 }

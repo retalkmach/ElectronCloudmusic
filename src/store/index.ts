@@ -8,7 +8,8 @@ export default createStore({
       name:"光",
       artist:"當山みれい"
     }],
-    playlistCursor:0
+    playlistCursor:0,
+    currentTime:0
   },
   mutations: {
   },
