@@ -1,9 +1,10 @@
 'use strict'
 
-import { app, protocol, BrowserWindow } from 'electron'
+import { app, protocol, BrowserWindow,ipcMain } from 'electron'
 import { createProtocol } from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, { VUEJS_DEVTOOLS } from 'electron-devtools-installer'
 const isDevelopment = process.env.NODE_ENV !== 'production'
+const fs = require("fs");
 
 // Scheme must be registered before the app is ready
 protocol.registerSchemesAsPrivileged([
@@ -17,7 +18,8 @@ async function createWindow() {
     height: 768,
     webPreferences: {
       nodeIntegration:true,
-      contextIsolation:false
+      contextIsolation:false,
+      preload: 'app://./preload.js'
       // Use pluginOptions.nodeIntegration, leave this alone
       // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
       // nodeIntegration: (process.env
@@ -80,3 +82,16 @@ if (isDevelopment) {
     })
   }
 }
+
+//receiver settingdata from render process
+ipcMain.on("setting-save",(event,args)=>{
+  console.log(args);
+  fs.open("C:\\Users\\empty\\Desktop\\setting","w",(err:Error,fd:number)=>{
+    if(err){
+      console.log(err);      
+    }else{
+      fs.writeFile(fd,args);
+      fs.close(fd);
+    }
+  })
+})

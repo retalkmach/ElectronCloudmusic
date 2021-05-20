@@ -1,9 +1,8 @@
 <template>
   <div id="container">
     <audio src=""></audio>
-    <router-link to="/playerfullscreen"
-      ><img src="@/assets/images/unknowAlbum.png" alt="" id="album-pic"
-    /></router-link>
+      <img src="@/assets/images/unknowAlbum.png" alt="" id="album-pic" @click="toggleDisplay"
+    />
     <div id="change-playstatus-buttons">
       <button id="prev" @click="updateMusicInfo">
         <div class="icon"></div>
@@ -186,6 +185,9 @@ export default defineComponent({
         this.DOMArray[3].currentTime = this.DOMArray[8].value;
       })
     },
+    toggleDisplay(){
+      this.$store.state.showPlayer = this.$store.state.showPlayer?false:true;
+    }
   },
 });
 </script>

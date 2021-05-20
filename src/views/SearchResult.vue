@@ -38,6 +38,12 @@ export default defineComponent({
   created() {
     this.search();
   },
+  mounted(){
+    document.addEventListener("scroll",()=>{
+      console.log(window.scrollY);
+      
+    })
+  },
   data() {
     return {
       searchResult: [],

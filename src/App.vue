@@ -2,19 +2,29 @@
   <div id="nav">
     <router-link to="/">Home</router-link> |
     <router-link to="/test">Test</router-link> |
-    <router-link to="/search">Search</router-link>
+    <router-link to="/search">Search</router-link> |
+    <router-link to="/setting">Setting</router-link>
   </div>
-  <router-view />
+  <div v-if="showPlayer" id="player"><player-full-screen /></div>
+  <router-view v-else />
   <player />
+  
 </template>
 
 <script>
-import player from "@/components/Player";
+import player from "@/components/Player.vue";
+import PlayerFullScreen from './views/PlayerFullScreen.vue';
 export default {
   name: "app",
   components: {
     player,
+    PlayerFullScreen
   },
+  computed:{
+    showPlayer(){
+      return this.$store.state.showPlayer;
+    }
+  }
 };
 </script>
 
@@ -44,6 +54,13 @@ p {
       color: #42b983;
     }
   }
+}
+
+#player{
+  position: absolute;
+  top: 0;
+  left: 0;
+  
 }
 
 </style>

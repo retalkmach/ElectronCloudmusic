@@ -26,6 +26,10 @@ const routes: Array<RouteRecordRaw> = [
     path: '/playerfullscreen',
     name: 'playerfullscreen',
     component: () => import('../views/PlayerFullScreen.vue')
+  }, {
+    path: '/setting',
+    name: 'setting',
+    component: () => import('../views/Setting.vue')
   }
 ]
 

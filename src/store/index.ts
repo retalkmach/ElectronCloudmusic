@@ -9,7 +9,9 @@ export default createStore({
       artist:"當山みれい"
     }],
     playlistCursor:0,
-    currentTime:0
+    currentTime:0,
+    showPlayer: false,
+    setting:{}
   },
   mutations: {
   },

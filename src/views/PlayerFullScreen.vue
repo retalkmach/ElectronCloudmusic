@@ -1,7 +1,7 @@
 <template>
-<div id="background">
-  <img src="" alt="">
-</div>
+  <div id="background">
+    <img src="" alt="" />
+  </div>
   <div id="music-info">
     <div id="imgbox">
       <img src="@/assets/images/unknowAlbum.png" alt="" />
@@ -34,29 +34,28 @@ export default defineComponent({
     musicID() {
       return this.$store.state.musicID;
     },
-    currentTime(){
+    currentTime() {
       return this.$store.state.currentTime;
-    }
+    },
   },
   watch: {
     musicID() {
       this.updateCurrentMusic();
     },
-    currentTime(){
+    currentTime() {
       this.updateLyric();
-    }
+    },
   },
   methods: {
     updateCurrentMusic() {
       let id = this.musicID;
       axios.get(`http://127.0.0.1:5052/music_detail?ids=${id}`).then((res) => {
         console.log(res);
-        document
-          .querySelector("#imgbox>img")
-          ?.setAttribute("src", res.data.data.songs[0].al.picUrl);
-        document
-          .querySelector("#background>img")
-          ?.setAttribute("src", res.data.data.songs[0].al.picUrl);
+        let picUrl = res.data.data.songs[0].al.picUrl;
+        let imgbox = document.querySelector("#imgbox>img");
+        let backgroundimage = document.querySelector("#background>img");
+        imgbox!.setAttribute("src", picUrl);
+        backgroundimage!.setAttribute("src", picUrl);
       });
     },
     getLyric() {
@@ -84,34 +83,34 @@ export default defineComponent({
         this.lyric.push(tempObj);
       }
     },
-    parseTime(time:string){
-      let mins = parseInt(time.slice(0,time.indexOf(":")));
-      let sec = parseInt(time.slice(time.indexOf(":")+1,time.indexOf(".")));
-      let mili = parseInt(time.slice(time.indexOf(".")+1));
-      return mins*60+sec+mili*0.001;
+    parseTime(time: string) {
+      let mins = parseInt(time.slice(0, time.indexOf(":")));
+      let sec = parseInt(time.slice(time.indexOf(":") + 1, time.indexOf(".")));
+      let mili = parseInt(time.slice(time.indexOf(".") + 1));
+      return mins * 60 + sec + mili * 0.001;
     },
-    updateLyric(){
+    updateLyric() {
       let time = this.currentTime;
-      for(let i=0;i<this.lyric.length;i++){
-        if(this.lyric[i].time<time&&this.lyric[i+1].time>time){
+      for (let i = 0; i < this.lyric.length; i++) {
+        if (this.lyric[i].time < time && this.lyric[i + 1].time > time) {
           let DOMS = document.querySelectorAll("#lyric li");
-          DOMS.forEach(DOM =>{
+          DOMS.forEach((DOM) => {
             DOM.className = "";
-          })
+          });
           DOMS[i].className = "current";
           this.scrollLyric(i);
           break;
         }
-      }      
+      }
     },
-    scrollLyric(i:number){
-      let DOM = <HTMLElement> document.querySelectorAll("#lyric li")[i];
+    scrollLyric(i: number) {
+      let DOM = <HTMLElement>document.querySelectorAll("#lyric li")[i];
       let ul = <HTMLElement>document.querySelector("#lyric ul");
       let offset = DOM.offsetTop;
-      offset>300?ul.style.top = -offset + 100+"px":false;
+      offset > 300 ? (ul.style.top = -offset + 100 + "px") : false;
       // console.log(offset);
       // console.log(ul.scrollTop);
-    }
+    },
   },
 });
 </script>
@@ -133,6 +132,7 @@ export default defineComponent({
   max-height: 45vh;
   overflow: scroll;
   overflow-x: hidden;
+  margin-top: 100px;
   ul {
     position: relative;
     max-width: 45vh;
@@ -147,12 +147,12 @@ export default defineComponent({
       line-height: 22px;
       scroll-snap-align: start;
     }
-    li.current{
+    li.current {
       color: lightsalmon;
     }
   }
 }
-#background>img{
+#background > img {
   position: absolute;
   top: 0;
   left: 0;
@@ -162,15 +162,15 @@ export default defineComponent({
   filter: blur(15px);
 }
 //美化播放页滚动条样式
-::-webkit-scrollbar{
+::-webkit-scrollbar {
   width: 12px;
   height: auto;
   background: none;
 }
-::-webkit-scrollbar-button{
+::-webkit-scrollbar-button {
   display: none;
 }
-::-webkit-scrollbar-thumb{
+::-webkit-scrollbar-thumb {
   border-radius: 6px;
   background-color: #dddddd44;
 }
