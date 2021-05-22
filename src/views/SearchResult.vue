@@ -10,15 +10,16 @@
     <li
       v-for="(item, index) in searchResult"
       :key="item"
-      v-on:click="playMusic(item.id)"
       v-bind:class="autoAddClass(index)"
     >
-      <div class="title">
+      <div class="title" v-on:click="playMusic(item.id)">
         {{ item.name }}
       </div>
       <div class="artists">
-        <span v-for="artist in item.artists" :key="artist"
-          >{{ artist.name }}
+        <span v-for="artist in item.artists" :key="artist">
+          <router-link :to="{ path: '/artist/' + artist.id }">{{
+            artist.name
+          }}</router-link>
         </span>
       </div>
       <div class="album">
@@ -38,11 +39,10 @@ export default defineComponent({
   created() {
     this.search();
   },
-  mounted(){
-    document.addEventListener("scroll",()=>{
+  mounted() {
+    document.addEventListener("scroll", () => {
       console.log(window.scrollY);
-      
-    })
+    });
   },
   data() {
     return {
@@ -54,11 +54,11 @@ export default defineComponent({
     search() {
       axios
         .get(
-          `http://127.0.0.1:5052/search?s=${this.$route.params.keyword}&type=1`
+          `http://127.0.0.1:3000/search?keywords=${this.$route.params.keyword}&type=1`
         )
         .then((res) => {
-          console.log(res.data.data);
-          this.searchResult = res.data.data.result.songs;
+          console.log(res.data);
+          this.searchResult = res.data.result.songs;
         });
     },
     playMusic(id: number) {
@@ -85,14 +85,14 @@ ul {
     list-style: none;
     div {
       display: inline-block;
-      height: 26px;
+      height: 32px;
       //   border-bottom: 1px solid lightgray;
-      line-height: 26px;
+      line-height: 32px;
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
     }
-    .artists>span:not(:last-of-type)::after{
+    .artists > span:not(:last-of-type)::after {
       content: "/";
       margin: 0 2px;
     }
@@ -104,6 +104,11 @@ ul {
   }
 }
 .bg > div {
-  background-color: #eeeeee;
+  background-color: #F8F8F8;
+}
+a {
+  // color: gray;
+  color: #2c3e50;
+  text-decoration: none;
 }
 </style>

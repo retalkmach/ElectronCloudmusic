@@ -102,8 +102,8 @@ export default defineComponent({
       axios.get(`http://127.0.0.1:5052/music?id=${id}`).then((res) => {
         this.DOMArray[3].setAttribute("src", res.data.data.data[0].url);
       });
-      axios.get(`http://127.0.0.1:5052/music_detail?ids=${id}`).then((res) => {
-        let data = res.data.data.songs[0];
+      axios.get(`http://127.0.0.1:3000/song/detail?ids=${id}`).then((res) => {
+        let data = res.data.songs[0];
         this.DOMArray[4].innerText = data.name;
         this.artists = [];
         for (let artist of data.ar) {

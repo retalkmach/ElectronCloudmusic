@@ -100,9 +100,12 @@ export default defineComponent({
   width: 80px;
   height: 20px;
   border: 1px solid gray;
-  border-radius: 4px;
+  border-radius: 2px;
   cursor: pointer;
   user-select: none;
+}
+.select-menu ul{
+  transition: 0.25s linear;
 }
 .select-menu[data-status="close"] ul {
   display: none;
@@ -124,12 +127,14 @@ export default defineComponent({
 }
 .menu-item {
   position: relative;
+  height: 24px;
   list-style: none;
   span {
     position: absolute;
     left: 0;
   }
   input {
+    position: absolute;
     right: 0;
   }
 }

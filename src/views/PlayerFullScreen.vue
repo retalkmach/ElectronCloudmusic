@@ -49,9 +49,9 @@ export default defineComponent({
   methods: {
     updateCurrentMusic() {
       let id = this.musicID;
-      axios.get(`http://127.0.0.1:5052/music_detail?ids=${id}`).then((res) => {
+      axios.get(`http://127.0.0.1:3000/song/detail?ids=${id}`).then((res) => {
         console.log(res);
-        let picUrl = res.data.data.songs[0].al.picUrl;
+        let picUrl = res.data.songs[0].al.picUrl;
         let imgbox = document.querySelector("#imgbox>img");
         let backgroundimage = document.querySelector("#background>img");
         imgbox!.setAttribute("src", picUrl);
@@ -60,10 +60,10 @@ export default defineComponent({
     },
     getLyric() {
       axios
-        .get(`http://127.0.0.1:5052/lyric?id=${this.musicID}`)
+        .get(`http://127.0.0.1:3000/lyric?id=${this.musicID}`)
         .then((res) => {
           console.log(res);
-          this.rowlyric = res.data.data;
+          this.rowlyric = res.data;
           this.progressLyric();
         });
     },
@@ -115,6 +115,9 @@ export default defineComponent({
 });
 </script>
 <style lang="scss" scoped>
+#music-info{
+  margin: 20px auto;
+}
 #imgbox {
   display: inline-block;
   width: 45vh;
@@ -132,7 +135,6 @@ export default defineComponent({
   max-height: 45vh;
   overflow: scroll;
   overflow-x: hidden;
-  margin-top: 100px;
   ul {
     position: relative;
     max-width: 45vh;

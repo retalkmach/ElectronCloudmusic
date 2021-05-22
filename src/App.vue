@@ -5,7 +5,7 @@
     <router-link to="/search">Search</router-link> |
     <router-link to="/setting">Setting</router-link>
   </div>
-  <div v-if="showPlayer" id="player"><player-full-screen /></div>
+  <player-full-screen  v-if="showPlayer"/>
   <router-view v-else />
   <player />
   
