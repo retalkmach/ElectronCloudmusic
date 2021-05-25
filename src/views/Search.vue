@@ -9,11 +9,19 @@
         @keyup.enter="location(keyword)"
         autocomplete="off"
       />
-      <button id="search-button" @click="location(keyword)"><div class="icon"></div></button>
+      <button id="search-button" @click="location(keyword)">
+        <div class="icon"></div>
+      </button>
     </div>
     <div id="suggest" v-if="keyword.length">
       <ul>
-        <li v-for="item in suggestcontent" :key="item" @click="location(item.keyword)">{{ item.keyword }}</li>
+        <li
+          v-for="item in suggestcontent"
+          :key="item"
+          @click="location(item.keyword)"
+        >
+          {{ item.keyword }}
+        </li>
       </ul>
     </div>
   </div>
@@ -30,27 +38,41 @@ export default defineComponent({
     return {
       keyword: "",
       suggestcontent: [],
+      throttle: false,
     };
   },
   methods: {
     getSuggest(keyword: string) {
-      axios
-        .get(`http://127.0.0.1:5052/search_suggest?keywords=${keyword}`)
-        .then((res) => {
-          console.log(res);
-          let data = res.data.data.result.allMatch;
-          console.log(data);
-          this.suggestcontent = data;
-          return data;
-        });
+      if (keyword == "") return false;
+      if (!this.throttle) {
+        axios
+          .get(`http://127.0.0.1:5052/search_suggest?keywords=${keyword}`)
+          .then((res) => {
+            console.log(res);
+            let data = res.data.data.result.allMatch;
+            console.log(data);
+            this.suggestcontent = data;
+            return data;
+          });
+      }
     },
-    location(keyword:string){
-        router.push({name:'searchresult',params:{keyword:keyword}});
-    }
+    location(keyword: string) {
+      router.push({ name: "searchresult", params: { keyword: keyword } });
+    },
+    networkThrottle() {
+      if (!this.throttle) {
+        this.throttle = true;
+        setTimeout(() => {
+          this.throttle = false;
+          this.getSuggest(document.querySelector("input")!.value);
+        }, 750);
+      }
+    },
   },
   watch: {
     keyword(newKeyword) {
       this.getSuggest(newKeyword);
+      this.networkThrottle();
     },
   },
 });
@@ -101,8 +123,8 @@ export default defineComponent({
       cursor: pointer;
       transition: 0.05s linear;
     }
-    li:hover{
-        background-color: lightgray;
+    li:hover {
+      background-color: lightgray;
     }
   }
 }

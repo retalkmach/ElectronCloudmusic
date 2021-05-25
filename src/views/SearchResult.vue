@@ -40,9 +40,6 @@ export default defineComponent({
     this.search();
   },
   mounted() {
-    document.addEventListener("scroll", () => {
-      console.log(window.scrollY);
-    });
   },
   data() {
     return {

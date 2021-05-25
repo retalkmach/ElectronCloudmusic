@@ -10,7 +10,6 @@
       <ul>
         <li v-for="item in lyric" :key="item">{{ item.content }}</li>
       </ul>
-      <p>{{ lyric.content }}</p>
     </div>
   </div>
 </template>
@@ -23,11 +22,23 @@ export default defineComponent({
   mounted() {
     this.updateCurrentMusic();
     this.getLyric();
+    this.preventScrollLyric();
+    // this.debounceSwitchLyric(false);
+    //add listener to change lyric
+    // document.querySelector("#container>audio")?.addEventListener("play",()=>{
+    //   this.debounceSwitchLyric(false);
+    // });
+    // document.querySelector("#container>input")?.addEventListener("input",()=>{
+    //   console.log("test");
+    //   this.debounceSwitchLyric(false);
+    // });
   },
   data() {
     return {
       lyric: [Object as any],
       rowlyric: Object as any,
+      canScrollLyric: true,
+      preventScrollTimeout: 0,
     };
   },
   computed: {
@@ -93,29 +104,60 @@ export default defineComponent({
       let time = this.currentTime;
       for (let i = 0; i < this.lyric.length; i++) {
         if (this.lyric[i].time < time && this.lyric[i + 1].time > time) {
-          let DOMS = document.querySelectorAll("#lyric li");
-          DOMS.forEach((DOM) => {
-            DOM.className = "";
-          });
-          DOMS[i].className = "current";
-          this.scrollLyric(i);
+          this.switchLyric(i);
           break;
         }
       }
     },
+    switchLyric(i: number) {
+      let DOMS = document.querySelectorAll("#lyric li");
+      DOMS.forEach((DOM) => {
+        DOM.className = "";
+      });
+      DOMS[i].className = "current";
+      this.scrollLyric(i);
+    },
     scrollLyric(i: number) {
-      let DOM = <HTMLElement>document.querySelectorAll("#lyric li")[i];
-      let ul = <HTMLElement>document.querySelector("#lyric ul");
-      let offset = DOM.offsetTop;
-      offset > 300 ? (ul.style.top = -offset + 100 + "px") : false;
-      // console.log(offset);
-      // console.log(ul.scrollTop);
+      if (this.canScrollLyric) {
+        let DOM = <HTMLElement>document.querySelectorAll("#lyric li")[i];
+        let ul = <HTMLElement>document.querySelector("#lyric ul");
+        let lyric = document.querySelector("#lyric")!;
+        let offset = DOM.offsetTop;
+        offset > 200 ? (lyric.scrollTop = offset - 100) : false;
+      }
+    },
+    preventScrollLyric() {
+      let lyric = document.querySelector("#lyric")!;
+      lyric.addEventListener("scroll", () => {
+        this.canScrollLyric = false;
+        if (!this.canScrollLyric) {
+          clearTimeout(this.preventScrollTimeout);
+        }
+        this.preventScrollTimeout = window.setTimeout(() => {
+          this.canScrollLyric = true;
+        }, 3000);
+      });
+    },
+    debounceSwitchLyric(useBinarySearch: boolean) {
+      let time = this.currentTime;
+      console.log(this.currentTime);
+      for (let i = 0; i < this.lyric.length; i++) {
+        console.log(this.lyric[i].time);
+        if (this.lyric[i].time < time && this.lyric[i + 1].time > time) {
+          this.switchLyric(i);
+          setTimeout(() => {
+            this.debounceSwitchLyric(false);
+            console.log(this.lyric[i + 1].time - this.currentTime);
+          }, this.lyric[i + 1].time - this.currentTime);
+          break;
+        }
+      }
     },
   },
 });
 </script>
 <style lang="scss" scoped>
-#music-info{
+#music-info {
   margin: 20px auto;
 }
 #imgbox {
@@ -135,6 +177,7 @@ export default defineComponent({
   max-height: 45vh;
   overflow: scroll;
   overflow-x: hidden;
+  scroll-behavior: smooth;
   ul {
     position: relative;
     max-width: 45vh;
@@ -161,7 +204,7 @@ export default defineComponent({
   width: 100vw;
   height: 100vh;
   z-index: -1;
-  filter: blur(15px);
+  filter: blur(20px);
 }
 //美化播放页滚动条样式
 ::-webkit-scrollbar {

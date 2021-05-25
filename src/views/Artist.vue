@@ -1,13 +1,13 @@
 <template>
   <main>
-    <div id="artist-info">
+    <div id="artist-info" v-if="artistinfo_loadready">
       <div id="img-container">
-        <img src="" alt="" id="artist-img" />
+        <img :src="artist_info.artist.cover" alt="" id="artist-img" />
       </div>
-      <h3 id="artist-name"></h3>
+      <h3 id="artist-name">{{ artist_info.artist.name }}</h3>
       <p id="description">{{ artist_info.artist.briefDesc }}</p>
     </div>
-    <div id="songs">
+    <div id="songs" v-if="songsdata_loadready">
       <ul v-if="songs.length != 0">
         <li
           v-for="(item, index) in songs"
@@ -49,6 +49,8 @@ export default defineComponent({
     return {
       artist_info: Object as any,
       songs: Object as any,
+      artistinfo_loadready: false,
+      songsdata_loadready: false,
     };
   },
   computed: {
@@ -69,6 +71,7 @@ export default defineComponent({
         .then((res) => {
           console.log(res.data);
           this.songs = res.data.songs;
+          this.songsdata_loadready = true
         });
     },
     getArtistInfo() {
@@ -77,12 +80,7 @@ export default defineComponent({
         .then((res) => {
           console.log(res.data.data);
           this.artist_info = res.data.data;
-          document
-            .querySelector("#artist-img")!
-            .setAttribute("src", this.artist_info.artist.cover);
-          document.querySelector(
-            "#artist-name"
-          )!.innerHTML = this.artist_info.artist.name;
+          this.artistinfo_loadready = true
         });
     },
     playMusic(id: number) {
@@ -114,7 +112,7 @@ export default defineComponent({
     transform: translateX(-50%);
   }
 }
-#description{
+#description {
   position: absolute;
   display: -webkit-box;
   -webkit-box-orient: vertical;
