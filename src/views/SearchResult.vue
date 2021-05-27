@@ -1,33 +1,36 @@
 <template>
-  <div id="search-box">
-    <input
-      type="text"
-      v-model="keyword"
-      @keyup.enter="updateSearchResult(keyword)"
-    />
-  </div>
-  <ul v-if="searchResult.length != 0">
-    <li
-      v-for="(item, index) in searchResult"
-      :key="item"
-      v-bind:class="autoAddClass(index)"
-    >
-      <div class="title" v-on:click="playMusic(item.id)">
-        {{ item.name }}
-      </div>
-      <div class="artists">
-        <span v-for="artist in item.artists" :key="artist">
-          <router-link :to="{ path: '/artist/' + artist.id }">{{
-            artist.name
-          }}</router-link>
-        </span>
-      </div>
-      <div class="album">
-        {{ item.album.name }}
-      </div>
-      <!-- <div class="index">{{autoAddClass(index)}} </div> -->
-    </li>
-  </ul>
+  <main>
+    <div id="search-box">
+      <input
+        type="text"
+        v-model="keyword"
+        @keyup.enter="updateSearchResult(keyword)"
+      />
+    </div>
+    <ul v-if="searchResult.length != 0">
+      <li
+        v-for="(item, index) in searchResult"
+        :key="item"
+        v-bind:class="autoAddClass(index)"
+      >
+        <div class="title" v-on:click="playMusic(item.id)">
+          {{ item.name }}
+        </div>
+        <div class="artists">
+          <span v-for="artist in item.artists" :key="artist">
+            <router-link :to="{ path: '/artist/' + artist.id }">{{
+              artist.name
+            }}</router-link>
+          </span>
+        </div>
+        <div class="album">
+          {{ item.album.name }}
+        </div>
+        <!-- <div class="index">{{autoAddClass(index)}} </div> -->
+      </li>
+    </ul>
+    <div id="loading">loadding</div>
+  </main>
 </template>
 <script lang="ts">
 import { Vue } from "vue-class-component";
@@ -37,26 +40,43 @@ import router from "@/router/index";
 import axios from "axios";
 export default defineComponent({
   created() {
-    this.search();
+    let page = this.search();
   },
-  mounted() {
-  },
+  mounted() {},
   data() {
+    const searchResult: Array<object> = [];
     return {
-      searchResult: [],
+      searchResult: searchResult,
       keyword: "",
     };
   },
   methods: {
-    search() {
-      axios
-        .get(
-          `http://127.0.0.1:3000/search?keywords=${this.$route.params.keyword}&type=1`
-        )
-        .then((res) => {
-          console.log(res.data);
-          this.searchResult = res.data.result.songs;
-        });
+    async search() {
+      let songCount: number = await this.getData(0);
+      let page: number = Math.ceil(songCount / 30);
+      let offset = 1;
+      let io = new IntersectionObserver(
+        (entry) => {
+          if (entry[0].intersectionRatio > 0.1) {
+            offset += 30;
+            this.getData(offset);
+            if (offset >= songCount - 30) {
+              // io.unobserve(entry[0] as any);
+              document.querySelector("#loading")?.remove();
+              io.disconnect();
+            }
+          }
+        },
+        {
+          threshold: 1.0,
+        }
+      );
+      if (songCount > 30) {
+        io.observe(<HTMLElement>document.querySelector("#loading"));
+      } else {
+        document.querySelector("#loading")?.remove();
+        io.disconnect();
+      }
     },
     playMusic(id: number) {
       this.$store.state.musicID = id;
@@ -68,6 +88,27 @@ export default defineComponent({
     autoAddClass(index: number) {
       return index % 2 == 0 ? "bg" : "";
     },
+    getData(offset: number): Promise<number> {
+      return new Promise((resolve, reject) => {
+        axios
+          .get(
+            `http://127.0.0.1:3000/search?keywords=${this.$route.params.keyword}&type=1&offset=${offset}`
+          )
+          .then((res) => {
+            console.log(res.data);
+            // this.searchResult = res.data.result.songs;
+            for (let i = 0; i < res.data.result.songs.length; i++) {
+              this.searchResult.push(res.data.result.songs[i]);
+            }
+            let songCount: number = res.data.result.songCount;
+            resolve(songCount);
+          })
+          .catch((err) => {
+            console.log(err);
+            reject(0);
+          });
+      });
+    },
   },
 });
 </script>
@@ -75,7 +116,7 @@ export default defineComponent({
 ul {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
-  margin-bottom: 80px;
+  margin: 0;
   padding: 0;
   li {
     display: contents;
@@ -83,7 +124,9 @@ ul {
     div {
       display: inline-block;
       height: 32px;
+      padding: 0 5px;
       //   border-bottom: 1px solid lightgray;
+      text-align: left;
       line-height: 32px;
       text-overflow: ellipsis;
       overflow: hidden;
@@ -101,7 +144,7 @@ ul {
   }
 }
 .bg > div {
-  background-color: #F8F8F8;
+  background-color: #f8f8f8;
 }
 a {
   // color: gray;

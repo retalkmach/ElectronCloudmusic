@@ -1,5 +1,5 @@
 <template>
-  <div id="search">
+  <main>
     <div id="search-box">
       <input
         type="text"
@@ -24,7 +24,7 @@
         </li>
       </ul>
     </div>
-  </div>
+  </main>
 </template>
 
 <script lang="ts">

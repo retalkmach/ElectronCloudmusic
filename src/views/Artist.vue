@@ -127,7 +127,7 @@ export default defineComponent({
   ul {
     display: grid;
     grid-template-columns: 2fr 1fr 1fr;
-    margin-bottom: 80px;
+    // margin-bottom: 80px;
     padding: 0px;
     li {
       display: contents;
