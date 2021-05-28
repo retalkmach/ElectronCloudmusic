@@ -29,7 +29,14 @@
         <!-- <div class="index">{{autoAddClass(index)}} </div> -->
       </li>
     </ul>
-    <div id="loading">loadding</div>
+    <div
+      id="loading"
+      v-loading="true"
+      element-loading-background="rgb(255,255,255)"
+      style="height:60px"
+    >
+      loading
+    </div>
   </main>
 </template>
 <script lang="ts">
@@ -116,7 +123,7 @@ export default defineComponent({
 ul {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr;
-  margin: 0;
+  margin-top: 20px;
   padding: 0;
   li {
     display: contents;

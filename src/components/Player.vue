@@ -1,7 +1,11 @@
 <template>
   <div id="container">
     <audio src=""></audio>
-      <img src="@/assets/images/unknowAlbum.png" alt="" id="album-pic" @click="toggleDisplay"
+    <img
+      src="@/assets/images/unknowAlbum.png"
+      alt=""
+      id="album-pic"
+      @click="toggleDisplay"
     />
     <div id="change-playstatus-buttons">
       <button id="prev" @click="updateMusicInfo">
@@ -30,10 +34,7 @@
           ><span id="played-duration"></span> / <span id="music-duration"></span
         ></span>
       </p>
-      <!-- <div id="progress-bar">
-        <div id="played-progress-bar"></div>
-      </div> -->      
-      <input type="range" name="" id="progress-bar" min="0" step="0.5">
+      <el-slider id="progress-bar" v-model="currentTime" :min="0" :step="0.5" :max="duration" :format-tooltip="parseTime"></el-slider>
     </div>
     <div id="controller">
       <button id="list" @click="toggleShowPlaylist">
@@ -50,13 +51,13 @@
 import { Vue } from "vue-class-component";
 import { defineComponent } from "vue";
 import { Store } from "vuex";
-import axios from "axios";
-// const request = require("@/request")
+import axios, { Method } from "axios";
 
 export default defineComponent({
   setup() {
     // this.updatePlayedInfo();
   },
+  created() {},
   mounted() {
     this.init();
     this.updateMusicInfo();
@@ -74,6 +75,7 @@ export default defineComponent({
       updateProgressInterval: 0,
       updatePlayedDurationInterval: 2,
       currentTime: 0,
+      duration:0,
       showPlaylist: false,
       DOMArray: [Object as any],
       artists: [""],
@@ -83,9 +85,10 @@ export default defineComponent({
     musicID() {
       this.playMusic();
     },
-    currentTime(newTime){
+    currentTime(newTime) {
       this.$store.state.currentTime = newTime;
-    }
+      this.DOMArray[3].currentTime = newTime;
+    },
   },
   methods: {
     playMusic() {
@@ -137,7 +140,6 @@ export default defineComponent({
       let playedDuration = document.querySelector("#played-duration");
       let musicDuration = document.querySelector("#music-duration");
       let progressBar = document.querySelector("#progress-bar");
-      // let playedProgress = document.querySelector("#played-progress-bar");
       let albumPic = document.querySelector("#album-pic");
       let playlist = document.querySelector("#playlist");
       //pop old data
@@ -152,24 +154,20 @@ export default defineComponent({
       this.DOMArray.push(playedDuration);
       this.DOMArray.push(musicDuration);
       this.DOMArray.push(progressBar);
-      // this.DOMArray.push(playedProgress);
       this.DOMArray.push(albumPic);
       this.DOMArray.push(playlist);
-      //check this function
-      console.log(this.DOMArray);
       //get data
       let duration: number = 0;
       //add player events
       this.DOMArray[3].addEventListener("durationchange", () => {
         duration = this.DOMArray[3].duration;
-        this.DOMArray[8].setAttribute("max",duration);
+        this.duration = duration;
       });
       this.DOMArray[3].addEventListener("timeupdate", () => {
         this.currentTime = this.DOMArray[3].currentTime;
         this.DOMArray[6].innerText = `${Math.floor(
           this.currentTime / 60
         )}:${this.autoAddZero(Math.ceil(this.currentTime % 60))}`;
-        this.DOMArray[8].value = this.currentTime;
       });
       this.DOMArray[3].addEventListener("pause", () => {
         this.DOMArray[0].className = "play";
@@ -177,16 +175,13 @@ export default defineComponent({
       this.DOMArray[3].addEventListener("play", () => {
         this.DOMArray[0].className = "pause";
       });
-      // this.DOMArray[3].addEventListener("canplay", () => {
-      //   console.log("can play");
-      // });
       this.DOMArray[3].addEventListener("ended", () => {});
-      this.DOMArray[8].addEventListener("input",()=>{
-        this.DOMArray[3].currentTime = this.DOMArray[8].value;
-      })
     },
-    toggleDisplay(){
-      this.$store.state.showPlayer = this.$store.state.showPlayer?false:true;
+    toggleDisplay() {
+      this.$store.state.showPlayer = !this.$store.state.showPlayer;
+    },
+    parseTime(time:number){
+      return `${Math.floor(time/60)}:${Math.floor(time%60)}`;
     }
   },
 });
@@ -258,7 +253,7 @@ export default defineComponent({
     .left {
       position: absolute;
       left: 5px;
-      span{
+      span {
         max-width: 250px;
         overflow: hidden;
         text-overflow: ellipsis;
@@ -385,47 +380,47 @@ export default defineComponent({
     transform: rotate(360deg);
   }
 }
-input[type=range] {
+input[type="range"] {
   height: 24px;
-  -webkit-appearance: none;
+  // -webkit-appearance: none;
   width: 100%;
 }
-input[type=range]:focus {
-  outline: none;
-}
-input[type=range]::-webkit-slider-runnable-track {
-  width: 100%;
-  height: 5px;
-  cursor: pointer;
-  background: #2497E3;
-  border-radius: 3px;
-  backdrop-filter: blur(35px);
-}
-input[type=range]::-webkit-slider-thumb {
-  border: 0px solid #2497E3;
-  height: 18px;
-  width: 18px;
-  border-radius: 9px;
-  background: #A1D0FF;
-  cursor: pointer;
-  -webkit-appearance: none;
-  margin-top: -6.5px;
-}
-input[type=range]:focus::-webkit-slider-runnable-track {
-  background: #2497E3;
-}
-input[type=range]::-moz-range-track {
-  width: 100%;
-  height: 5px;
-  cursor: pointer;
-  background: #2497E3;
-  border-radius: 3px;
-}
-input[type=range]::-moz-range-thumb {
-  height: 18px;
-  width: 18px;
-  border-radius: 9px;
-  background: #A1D0FF;
-  cursor: pointer;
-}
+// input[type="range"]:focus {
+//   outline: none;
+// }
+// input[type="range"]::-webkit-slider-runnable-track {
+//   width: 100%;
+//   height: 5px;
+//   cursor: pointer;
+//   background: #2497e3;
+//   border-radius: 3px;
+//   backdrop-filter: blur(35px);
+// }
+// input[type="range"]::-webkit-slider-thumb {
+//   border: 0px solid #2497e3;
+//   height: 18px;
+//   width: 18px;
+//   border-radius: 9px;
+//   background: #a1d0ff;
+//   cursor: pointer;
+//   -webkit-appearance: none;
+//   margin-top: -6.5px;
+// }
+// input[type="range"]:focus::-webkit-slider-runnable-track {
+//   background: #2497e3;
+// }
+// input[type="range"]::-moz-range-track {
+//   width: 100%;
+//   height: 5px;
+//   cursor: pointer;
+//   background: #2497e3;
+//   border-radius: 3px;
+// }
+// input[type="range"]::-moz-range-thumb {
+//   height: 18px;
+//   width: 18px;
+//   border-radius: 9px;
+//   background: #a1d0ff;
+//   cursor: pointer;
+// }
 </style>
