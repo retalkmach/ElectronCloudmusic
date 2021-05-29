@@ -14,7 +14,7 @@
           :key="item"
           v-bind:class="autoAddClass(index)"
         >
-          <div class="title" v-on:click="playMusic(item.id)">
+          <div class="title" v-on:click="playMusic(index)">
             {{ item.name }}
           </div>
           <div class="artists">
@@ -38,6 +38,7 @@ import { defineComponent } from "vue";
 import { Store } from "vuex";
 import router from "@/router/index";
 import axios from "axios";
+import store from "@/store";
 
 export default defineComponent({
   setup() {},
@@ -46,9 +47,10 @@ export default defineComponent({
     this.getArtistSongs();
   },
   data() {
+    const songs:Array<any> = [];
     return {
       artist_info: Object as any,
-      songs: Object as any,
+      songs: songs,
       artistinfo_loadready: false,
       songsdata_loadready: false,
     };
@@ -83,8 +85,25 @@ export default defineComponent({
           this.artistinfo_loadready = true
         });
     },
-    playMusic(id: number) {
-      this.$store.state.musicID = id;
+    playMusic(index: number) {
+      let newPlaylist = [];
+      for(let i=0;i<this.songs.length;i++){
+        let artists : Array<any> = [];
+        let song = {
+          id:this.songs[i].id,
+          name: this.songs[i].name,
+          artists: artists
+        };
+        for(let j=0;j<this.songs[i].ar.length;j++){
+          song.artists.push(j<this.songs[i].ar[j].name);
+        }
+        newPlaylist.push(song);
+      }
+      let newData = {
+        playlist: newPlaylist,
+        cursor: index
+      }
+      store.commit("replacePlaylist",newData);
     },
     autoAddClass(index: number) {
       return index % 2 == 0 ? "bg" : "";

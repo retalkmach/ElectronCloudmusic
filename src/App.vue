@@ -64,6 +64,6 @@ p {
 }
 main{
   height: calc(100vh - 80px - 68px);
-  overflow: scroll;
+  overflow-y: scroll;
 }
 </style>

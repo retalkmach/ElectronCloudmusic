@@ -13,7 +13,7 @@
         :key="item"
         v-bind:class="autoAddClass(index)"
       >
-        <div class="title" v-on:click="playMusic(item.id)">
+        <div class="title" v-on:touchend="addPlaylist(index)" v-on:dblclick="addPlaylist(index)">
           {{ item.name }}
         </div>
         <div class="artists">
@@ -45,13 +45,14 @@ import { defineComponent } from "vue";
 import { Store } from "vuex";
 import router from "@/router/index";
 import axios from "axios";
+import store from "@/store";
 export default defineComponent({
   created() {
     let page = this.search();
   },
   mounted() {},
   data() {
-    const searchResult: Array<object> = [];
+    const searchResult: Array<any> = [];
     return {
       searchResult: searchResult,
       keyword: "",
@@ -116,6 +117,21 @@ export default defineComponent({
           });
       });
     },
+    addPlaylist(index:number){
+      console.log(index);
+      console.log(this.searchResult[index]);
+      let artist: Array<string> = [];
+      let songData = {
+        id: this.searchResult[index].id,
+        name: this.searchResult[index].name,
+        artist: artist
+      }
+      for(let i=0;i<this.searchResult[index].artists.length;i++){
+        songData.artist.push(this.searchResult[index].artists[i].name);
+      }
+      store.commit('addPlaylist',songData);
+      this.playMusic(this.searchResult[index].id);
+    }
   },
 });
 </script>

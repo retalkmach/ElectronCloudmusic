@@ -8,7 +8,7 @@
       @click="toggleDisplay"
     />
     <div id="change-playstatus-buttons">
-      <button id="prev" @click="playPrevMusic">
+      <button id="prev" @click="updateMusicInfo">
         <div class="icon"></div>
       </button>
       <button
@@ -19,7 +19,7 @@
         <div class="left"></div>
         <div class="right"></div>
       </button>
-      <button id="next" @click="playNextMusic">
+      <button id="next">
         <div class="icon"></div>
       </button>
     </div>
@@ -34,15 +34,7 @@
           ><span id="played-duration"></span> / <span id="music-duration"></span
         ></span>
       </p>
-      <el-slider
-        id="progress-bar"
-        v-model="currentTime"
-        :min="0"
-        :step="0.5"
-        :max="duration"
-        :format-tooltip="parseTime"
-        @change="DOMArray[3].currentTime = currentTime"
-      ></el-slider>
+      <el-slider id="progress-bar" v-model="currentTime" :min="0" :step="0.5" :max="duration" :format-tooltip="parseTime" ></el-slider>
     </div>
     <div id="controller">
       <button id="list" @click="toggleShowPlaylist">
@@ -51,13 +43,7 @@
     </div>
     <div id="playlist" v-if="showPlaylist">
       <h5>播放列表</h5>
-      <li
-        v-for="(music, index) in playlist"
-        :key="music"
-        @click="changeMusic(index)"
-      >
-        {{ music.name }}
-      </li>
+      <li v-for="music in playlist" :key="music">{{ music.name }}</li>
     </div>
   </div>
 </template>
@@ -65,8 +51,7 @@
 import { Vue } from "vue-class-component";
 import { defineComponent } from "vue";
 import { Store } from "vuex";
-import axios from "axios";
-import store from "@/store";
+import axios, { Method } from "axios";
 
 export default defineComponent({
   setup() {
@@ -90,7 +75,7 @@ export default defineComponent({
       updateProgressInterval: 0,
       updatePlayedDurationInterval: 2,
       currentTime: 0,
-      duration: 0,
+      duration:0,
       showPlaylist: false,
       DOMArray: [Object as any],
       artists: [""],
@@ -110,9 +95,6 @@ export default defineComponent({
       this.DOMArray[3].addEventListener("canplay", () => {
         this.DOMArray[3].play();
       });
-    },
-    changeMusic(index: number) {
-      store.commit("changePlaylistCursor", index);
     },
     updateMusicInfo() {
       let id: number = this.musicID;
@@ -146,16 +128,7 @@ export default defineComponent({
     },
     pause() {
       this.DOMArray[3].pause();
-    },
-    playNextMusic() {
-      this.$store.state.playlistCursor == this.$store.state.playlist.length
-        ? this.changeMusic(0)
-        : this.changeMusic(this.$store.state.playlistCursor + 1);
-    },
-    playPrevMusic() {
-      this.$store.state.playlistCursor == 0
-        ? this.changeMusic(this.$store.state.playlist.length)
-        : this.changeMusic(this.$store.state.playlistCursor - 1);
+      console.log("paused");      
     },
     init() {
       let togglePlayStatus = document.querySelector("#toggle-play-status");
@@ -183,6 +156,8 @@ export default defineComponent({
       this.DOMArray.push(progressBar);
       this.DOMArray.push(albumPic);
       this.DOMArray.push(playlist);
+      console.log(this.DOMArray);
+      
       //get data
       let duration: number = 0;
       //add player events
@@ -202,16 +177,19 @@ export default defineComponent({
       this.DOMArray[3].addEventListener("play", () => {
         this.DOMArray[0].className = "pause";
       });
-      this.DOMArray[3].addEventListener("ended", () => {
-        this.playNextMusic();
+      this.DOMArray[3].addEventListener("ended", () => {});
+      this.DOMArray[8].addEventListener("click", () => {
+        console.log("test");
+        
+        this.DOMArray[3].currentTime = this.currentTime;
       });
     },
     toggleDisplay() {
       this.$store.state.showPlayer = !this.$store.state.showPlayer;
     },
-    parseTime(time: number) {
-      return `${Math.floor(time / 60)}:${Math.floor(time % 60)}`;
-    },
+    parseTime(time:number){
+      return `${Math.floor(time/60)}:${Math.floor(time%60)}`;
+    }
   },
 });
 </script>
@@ -335,27 +313,19 @@ export default defineComponent({
   position: absolute;
   bottom: 81px;
   right: 0;
-  width: 320px;
-  max-height: 70vh;
+  width: 256px;
   padding: 2px 5px;
-  box-shadow: 1px 1px 2px 1px lightgray;
+  box-shadow: 1px 1px 1px 1px lightgray;
   border-radius: 2px;
   background-color: white;
-  overflow-y: scroll;
   h5 {
     margin: 5px 0;
     text-align: center;
   }
   li {
-    // margin: 3px 0;
-    overflow: hidden;
-    height: 28px;
-    line-height: 28px;
+    margin: 3px 0;
     list-style: none;
     text-align: left;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-
   }
 }
 #toggle-play-status.play {
