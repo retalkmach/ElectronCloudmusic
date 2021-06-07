@@ -1,13 +1,21 @@
 <template>
   <main>
-    <div id="artist-info" v-if="artistinfo_loadready">
+    <div id="album-info" v-if="data_loadready">
       <div id="img-container">
-        <img :src="artist_info.artist.cover" alt="" id="artist-img" />
+        <img :src="album_info.picUrl" alt="" id="album-img" />
       </div>
-      <h3 id="artist-name">{{ artist_info.artist.name }}</h3>
-      <p id="description">{{ artist_info.artist.briefDesc }}</p>
+      <div id="album-data">
+        <h3 id="album-name">{{ album_info.name }}</h3>
+        <p id="artist-info">
+          <img :src="album_info.artist.img1v1Url" alt="" id="artist-avatar" />
+          <span>{{ album_info.artist.name }}</span>
+        </p>
+        <p id="description">
+          {{ album_info.briefDesc || album_info.description }}
+        </p>
+      </div>
     </div>
-    <div id="songs" v-if="songsdata_loadready">
+    <div id="songs" v-if="data_loadready">
       <ul v-if="songs.length != 0">
         <li
           v-for="(item, index) in songs"
@@ -32,6 +40,9 @@
         </li>
       </ul>
     </div>
+    <div v-else v-loading="true" element-loading-background="rgb(255,255,255)">
+      loading
+    </div>
   </main>
 </template>
 <script lang="ts">
@@ -45,67 +56,47 @@ import store from "@/store";
 export default defineComponent({
   setup() {},
   mounted() {
-    this.getArtistInfo();
-    this.getArtistSongs();
+    this.getData();
   },
   data() {
-    const songs:Array<any> = [];
+    let songs: Array<any> = [];
     return {
-      artist_info: Object as any,
+      album_info: Object as any,
       songs: songs,
-      artistinfo_loadready: false,
-      songsdata_loadready: false,
+      data_loadready: false,
+      // albumData: albumData
     };
   },
-  computed: {
-    artistID() {
-      return this.$route.params.artistID;
-    },
-  },
-  watch: {
-    artistID() {
-      this.getArtistInfo();
-      this.getArtistSongs();
-    },
-  },
   methods: {
-    getArtistSongs() {
+    getData() {
       axios
-        .get(`/artist/top/song?id=${this.artistID}`)
+        .get(`/album?id=${this.$route.params.albumID}`)
         .then((res) => {
-          console.log(res.data);
+          console.log(res);
           this.songs = res.data.songs;
-          this.songsdata_loadready = true
-        });
-    },
-    getArtistInfo() {
-      axios
-        .get(`/artist/detail?id=${this.artistID}`)
-        .then((res) => {
-          console.log(res.data.data);
-          this.artist_info = res.data.data;
-          this.artistinfo_loadready = true
+          this.album_info = res.data.album;
+          this.data_loadready = true;
         });
     },
     playMusic(index: number) {
       let newPlaylist = [];
-      for(let i=0;i<this.songs.length;i++){
-        let artists : Array<any> = [];
+      for (let i = 0; i < this.songs.length; i++) {
+        let artists: Array<any> = [];
         let song = {
-          id:this.songs[i].id,
+          id: this.songs[i].id,
           name: this.songs[i].name,
-          artists: artists
+          artists: artists,
         };
-        for(let j=0;j<this.songs[i].ar.length;j++){
-          song.artists.push(j<this.songs[i].ar[j].name);
+        for (let j = 0; j < this.songs[i].ar.length; j++) {
+          song.artists.push(j < this.songs[i].ar[j].name);
         }
         newPlaylist.push(song);
       }
       let newData = {
         playlist: newPlaylist,
-        cursor: index
-      }
-      store.commit("replacePlaylist",newData);
+        cursor: index,
+      };
+      store.commit("replacePlaylist", newData);
     },
     autoAddClass(index: number) {
       return index % 2 == 0 ? "bg" : "";
@@ -114,35 +105,63 @@ export default defineComponent({
 });
 </script>
 <style lang="scss" scoped>
-#artist-info {
+#album-info {
   position: relative;
   width: 100%;
-  height: 200px;
+  height: 220px;
+  padding: 10px 20px;
+  box-sizing: border-box;
+}
+#album-data {
+  position: relative;
+  left: calc(10vw + 20px + 200px);
+  top: 0;
+  max-width: calc(100vw - 40px - 200px - 10vw);
+  overflow: hidden;
+  h3 {
+    position: relative;
+    max-width: 60vw;
+    left: 0;
+    margin: 0;
+    text-align: left;
+  }
+  #artist-info {
+    display: flex;
+    max-width: 300px;
+    margin: 10px 0;
+    line-height: 30px;
+    justify-content: left;
+    align-items: center;
+    #artist-avatar {
+      width: 30px;
+      height: 30px;
+      margin-right: 5px;
+      border-radius: 50%;
+    }
+  }
+  #description {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    width: 85%;
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    -webkit-line-clamp: 4;
+  }
 }
 #img-container {
   position: absolute;
-  left: 15%;
+  left: 10%;
   width: 200px;
   height: 200px;
   overflow: hidden;
   box-shadow: 0px 0px 1px 0px lightgray;
-  #artist-img {
+  #album-img {
     // width: 150px;
     height: 200px;
     margin-left: 50%;
     transform: translateX(-50%);
   }
-}
-#description {
-  position: absolute;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  left: 45%;
-  width: 50%;
-  text-align: left;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  -webkit-line-clamp: 4;
 }
 #songs {
   ul {

@@ -3,7 +3,8 @@
     <router-link to="/">Home</router-link> |
     <router-link to="/test">Test</router-link> |
     <router-link to="/search">Search</router-link> |
-    <router-link to="/setting">Setting</router-link>
+    <router-link to="/setting">Setting</router-link> |
+    <router-link to="/user">User</router-link>
   </div>
   <player-full-screen  v-if="showPlayer"/>
   <router-view v-else />
@@ -65,5 +66,8 @@ p {
 main{
   height: calc(100vh - 80px - 68px);
   overflow-y: scroll;
+}
+a{
+  color: black;
 }
 </style>

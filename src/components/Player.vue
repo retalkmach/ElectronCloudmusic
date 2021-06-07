@@ -65,7 +65,7 @@
 import { Vue } from "vue-class-component";
 import { defineComponent } from "vue";
 import { Store } from "vuex";
-import axios from "axios";
+import axios from "../axios";
 import store from "@/store";
 
 export default defineComponent({
@@ -119,10 +119,10 @@ export default defineComponent({
       //preset played duration
       this.DOMArray[6].innerText = "0:00";
       //update player music address
-      axios.get(`http://127.0.0.1:5052/music?id=${id}`).then((res) => {
-        this.DOMArray[3].setAttribute("src", res.data.data.data[0].url);
+      axios.post(`song/url?id=${id}`,{ cookie: localStorage.getItem("cookie") }).then((res) => {
+        this.DOMArray[3].setAttribute("src", res.data.data[0].url);
       });
-      axios.get(`http://127.0.0.1:3000/song/detail?ids=${id}`).then((res) => {
+      axios.get(`/song/detail?ids=${id}`).then((res) => {
         let data = res.data.songs[0];
         this.DOMArray[4].innerText = data.name;
         this.artists = [];
@@ -148,7 +148,7 @@ export default defineComponent({
       this.DOMArray[3].pause();
     },
     playNextMusic() {
-      this.$store.state.playlistCursor == this.$store.state.playlist.length
+      this.$store.state.playlistCursor+1 == this.$store.state.playlist.length
         ? this.changeMusic(0)
         : this.changeMusic(this.$store.state.playlistCursor + 1);
     },

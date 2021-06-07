@@ -32,7 +32,7 @@ import { Vue } from "vue-class-component";
 import { defineComponent } from "vue";
 import { Store } from "vuex";
 import router from "@/router/index";
-import axios from "axios";
+import axios from "../axios";
 export default defineComponent({
   data() {
     return {
@@ -46,10 +46,10 @@ export default defineComponent({
       if (keyword == "") return false;
       if (!this.throttle) {
         axios
-          .get(`http://127.0.0.1:5052/search_suggest?keywords=${keyword}`)
+          .get(`/search/suggest?keywords=${keyword}&type=mobile`)
           .then((res) => {
             console.log(res);
-            let data = res.data.data.result.allMatch;
+            let data = res.data.result.allMatch;
             console.log(data);
             this.suggestcontent = data;
             return data;

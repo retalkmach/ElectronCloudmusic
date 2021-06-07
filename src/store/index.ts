@@ -26,7 +26,7 @@ export default createStore({
       state.playlist.splice(state.playlistCursor+1,0,songData);
       state.playlistCursor++;
     },
-    changePlaylistCursor(state,cursor:number){
+    changePlaylistCursor(state,cursor:number){ 
       if (cursor>state.playlist.length) return false;
       state.playlistCursor = cursor;
       state.musicID = state.playlist[cursor].id;
@@ -34,6 +34,7 @@ export default createStore({
     replacePlaylist(state,newData:any){
       state.playlist = newData.playlist;
       state.playlistCursor = newData.cursor;
+      state.musicID = state.playlist[newData.cursor].id;
     }
   },
   actions: {

@@ -17,7 +17,7 @@
 import { Options, Vue } from "vue-class-component";
 import { defineComponent, onMounted, onUnmounted } from "vue";
 import { Store } from "vuex";
-import axios from "axios";
+import axios from "../axios";
 export default defineComponent({
   mounted() {
     this.updateCurrentMusic();
@@ -60,7 +60,7 @@ export default defineComponent({
   methods: {
     updateCurrentMusic() {
       let id = this.musicID;
-      axios.get(`http://127.0.0.1:3000/song/detail?ids=${id}`).then((res) => {
+      axios.get(`/song/detail?ids=${id}`).then((res) => {
         console.log(res);
         let picUrl = res.data.songs[0].al.picUrl;
         let imgbox = document.querySelector("#imgbox>img");
@@ -71,7 +71,7 @@ export default defineComponent({
     },
     getLyric() {
       axios
-        .get(`http://127.0.0.1:3000/lyric?id=${this.musicID}`)
+        .get(`/lyric?id=${this.musicID}`)
         .then((res) => {
           console.log(res);
           this.rowlyric = res.data;

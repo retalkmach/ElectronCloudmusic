@@ -13,7 +13,11 @@
         :key="item"
         v-bind:class="autoAddClass(index)"
       >
-        <div class="title" v-on:touchend="addPlaylist(index)" v-on:dblclick="addPlaylist(index)">
+        <div
+          class="title"
+          v-on:touchend="addPlaylist(index)"
+          v-on:dblclick="addPlaylist(index)"
+        >
           {{ item.name }}
         </div>
         <div class="artists">
@@ -24,7 +28,9 @@
           </span>
         </div>
         <div class="album">
-          {{ item.album.name }}
+          <router-link :to="{ path: '/album/' + item.album.id }">
+            {{ item.album.name }}
+          </router-link>
         </div>
         <!-- <div class="index">{{autoAddClass(index)}} </div> -->
       </li>
@@ -33,7 +39,7 @@
       id="loading"
       v-loading="true"
       element-loading-background="rgb(255,255,255)"
-      style="height:60px"
+      style="height: 60px"
     >
       loading
     </div>
@@ -44,8 +50,9 @@ import { Vue } from "vue-class-component";
 import { defineComponent } from "vue";
 import { Store } from "vuex";
 import router from "@/router/index";
-import axios from "axios";
+import axios from "../axios";
 import store from "@/store";
+import { lchown } from "original-fs";
 export default defineComponent({
   created() {
     let page = this.search();
@@ -70,7 +77,8 @@ export default defineComponent({
             this.getData(offset);
             if (offset >= songCount - 30) {
               // io.unobserve(entry[0] as any);
-              document.querySelector("#loading")?.remove();
+              let loading = document.querySelector("#loading");
+              loading!.remove();
               io.disconnect();
             }
           }
@@ -82,7 +90,8 @@ export default defineComponent({
       if (songCount > 30) {
         io.observe(<HTMLElement>document.querySelector("#loading"));
       } else {
-        document.querySelector("#loading")?.remove();
+        let loading = document.querySelector("#loading");
+        loading!.remove();
         io.disconnect();
       }
     },
@@ -91,7 +100,7 @@ export default defineComponent({
     },
     updateSearchResult(keyword: string) {
       router.push({ name: "searchresult", params: { keyword: keyword } });
-      this.search();
+      this.getData(0);
     },
     autoAddClass(index: number) {
       return index % 2 == 0 ? "bg" : "";
@@ -100,7 +109,7 @@ export default defineComponent({
       return new Promise((resolve, reject) => {
         axios
           .get(
-            `http://127.0.0.1:3000/search?keywords=${this.$route.params.keyword}&type=1&offset=${offset}`
+            `/search?keywords=${this.$route.params.keyword}&type=1&offset=${offset}`
           )
           .then((res) => {
             console.log(res.data);
@@ -117,21 +126,21 @@ export default defineComponent({
           });
       });
     },
-    addPlaylist(index:number){
+    addPlaylist(index: number) {
       console.log(index);
       console.log(this.searchResult[index]);
       let artist: Array<string> = [];
       let songData = {
         id: this.searchResult[index].id,
         name: this.searchResult[index].name,
-        artist: artist
-      }
-      for(let i=0;i<this.searchResult[index].artists.length;i++){
+        artist: artist,
+      };
+      for (let i = 0; i < this.searchResult[index].artists.length; i++) {
         songData.artist.push(this.searchResult[index].artists[i].name);
       }
-      store.commit('addPlaylist',songData);
+      store.commit("addPlaylist", songData);
       this.playMusic(this.searchResult[index].id);
-    }
+    },
   },
 });
 </script>
