@@ -1,6 +1,6 @@
 <template>
   <div id="container">
-    <audio src=""></audio>
+    <audio src="" crossorigin="anonymous"></audio>
     <img
       src="@/assets/images/unknowAlbum.png"
       alt=""
@@ -119,9 +119,13 @@ export default defineComponent({
       //preset played duration
       this.DOMArray[6].innerText = "0:00";
       //update player music address
-      axios.post(`song/url?id=${id}`,{ cookie: localStorage.getItem("cookie") }).then((res) => {
-        this.DOMArray[3].setAttribute("src", res.data.data[0].url);
-      });
+      axios
+        .post(`song/url?id=${id}`, {
+          cookie: localStorage.getItem("cookie") || "",
+        })
+        .then((res) => {
+          this.DOMArray[3].setAttribute("src", res.data.data[0].url);
+        });
       axios.get(`/song/detail?ids=${id}`).then((res) => {
         let data = res.data.songs[0];
         this.DOMArray[4].innerText = data.name;
@@ -148,7 +152,7 @@ export default defineComponent({
       this.DOMArray[3].pause();
     },
     playNextMusic() {
-      this.$store.state.playlistCursor+1 == this.$store.state.playlist.length
+      this.$store.state.playlistCursor + 1 == this.$store.state.playlist.length
         ? this.changeMusic(0)
         : this.changeMusic(this.$store.state.playlistCursor + 1);
     },
@@ -192,9 +196,7 @@ export default defineComponent({
       });
       this.DOMArray[3].addEventListener("timeupdate", () => {
         this.currentTime = this.DOMArray[3].currentTime;
-        this.DOMArray[6].innerText = `${Math.floor(
-          this.currentTime / 60
-        )}:${this.autoAddZero(Math.ceil(this.currentTime % 60))}`;
+        this.DOMArray[6].innerText = this.parseTime(this.currentTime);
       });
       this.DOMArray[3].addEventListener("pause", () => {
         this.DOMArray[0].className = "play";
@@ -210,13 +212,22 @@ export default defineComponent({
       this.$store.state.showPlayer = !this.$store.state.showPlayer;
     },
     parseTime(time: number) {
-      return `${Math.floor(time / 60)}:${Math.floor(time % 60)}`;
+      return `${Math.floor(time / 60)}:${this.autoAddZero(
+        Math.floor(time % 60)
+      )}`;
     },
+    musicFrequency(){
+      let audioCtx = new AudioContext();
+    }
   },
 });
 </script>
 
 <style lang="scss" scoped>
+$primary-color: #42b983;
+$primary-color-hover: #49cc91;
+$primary-color-click: #3da878;
+
 #container {
   position: fixed;
   bottom: 0;
@@ -234,10 +245,11 @@ export default defineComponent({
 }
 #change-playstatus-buttons {
   display: flex;
-  width: 150px;
+  width: 140px;
   height: 100%;
   // border: 1px solid lightgreen;
   margin-left: 80px;
+  justify-content: center;
   align-items: center;
   button {
     width: 32px;
@@ -246,7 +258,7 @@ export default defineComponent({
     padding: 0;
     border-radius: 50%;
     border: none;
-    background-color: #42b983;
+    background-color: $primary-color;
     transition: 0.1s;
     .icon {
       width: 32px;
@@ -255,19 +267,35 @@ export default defineComponent({
     }
   }
   button:active {
-    width: 28px;
-    height: 28px;
-    margin: 2px;
+    // width: 28px;
+    // height: 28px;
+    // margin: 2px;
+    background-color: $primary-color-click;
+  }
+  button:hover {
+    background-color: $primary-color-hover;
   }
   #toggle-play-status {
+    position: relative;
     width: 40px;
     height: 40px;
     div {
-      float: left;
+      // float: left;
+      position: absolute;
+      top: 0;
       width: 20px;
       height: 40px;
+      margin: 0;
       background-color: white;
       transition: 0.1s linear;
+    }
+    .left{
+      position: absolute;
+      left: 0;
+    }
+    .right{
+      position: absolute;
+      left: 20px;
     }
   }
 }
@@ -282,6 +310,10 @@ export default defineComponent({
     .left {
       position: absolute;
       left: 5px;
+      max-width: calc(100vw - 80px - 140px - 50px - 70px - 50px);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
       span {
         max-width: 250px;
         overflow: hidden;
@@ -355,9 +387,9 @@ export default defineComponent({
     text-align: left;
     text-overflow: ellipsis;
     white-space: nowrap;
-
   }
 }
+// 按钮样式
 #toggle-play-status.play {
   .left {
     clip-path: polygon(50% 25%, 100% 40%, 100% 60%, 50% 75%);
@@ -422,42 +454,33 @@ input[type="range"] {
   // -webkit-appearance: none;
   width: 100%;
 }
-// input[type="range"]:focus {
-//   outline: none;
-// }
-// input[type="range"]::-webkit-slider-runnable-track {
-//   width: 100%;
-//   height: 5px;
-//   cursor: pointer;
-//   background: #2497e3;
-//   border-radius: 3px;
-//   backdrop-filter: blur(35px);
-// }
-// input[type="range"]::-webkit-slider-thumb {
-//   border: 0px solid #2497e3;
-//   height: 18px;
-//   width: 18px;
-//   border-radius: 9px;
-//   background: #a1d0ff;
-//   cursor: pointer;
-//   -webkit-appearance: none;
-//   margin-top: -6.5px;
-// }
-// input[type="range"]:focus::-webkit-slider-runnable-track {
-//   background: #2497e3;
-// }
-// input[type="range"]::-moz-range-track {
-//   width: 100%;
-//   height: 5px;
-//   cursor: pointer;
-//   background: #2497e3;
-//   border-radius: 3px;
-// }
-// input[type="range"]::-moz-range-thumb {
-//   height: 18px;
-//   width: 18px;
-//   border-radius: 9px;
-//   background: #a1d0ff;
-//   cursor: pointer;
-// }
+// 媒体查询，适配多种分辨率
+@media screen and (max-width: 540px) {
+  // #change-playstatus-buttons {
+    // #prev,#next{
+    //   display: none;
+    // }
+    // #toggle-play-status{
+    //   display: block;
+    // }
+  // }
+  #player-info {
+    #music-info {
+      // .left {
+      //   position: absolute;
+      //   left: -150px;
+      //   min-width: 100px;
+      //   max-width: 200px;
+      // }
+      .right {
+        display: none;
+      }
+    }
+  }
+}
+@media screen and (min-width: 540px) {
+  .el-progress {
+    display: none;
+  }
+}
 </style>

@@ -1,5 +1,4 @@
 import axios from "axios";
-import cookies from "js-cookie";
 const config = {
     baseURL: 'http://127.0.0.1:3000',
     timeout: 5000,

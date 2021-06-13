@@ -1,0 +1,7 @@
+{
+    "carouselAnimateType": {
+        "traditional": "传统",
+        "fade": "渐隐渐显",
+        "pullpushdoor": "推拉门"
+    }
+}

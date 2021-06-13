@@ -31,7 +31,6 @@ import { Store } from "vuex";
 import router from "@/router/index";
 import axios from "../axios";
 import store from "@/store";
-import { defaults } from "js-cookie";
 
 export default defineComponent({
   mounted() {
@@ -71,26 +70,23 @@ export default defineComponent({
     },
     initCarousel() {
       //读取动画类型,若该值不存在则赋值默认值
-      if (localStorage.getItem("animateType") == null) {
-        localStorage.setItem("animateType", "fade");
-      } else {
-        this.animate = localStorage.getItem("animateType") || "pullpushdoor";
-      }
+      this.animate =
+        this.$store.state.setting.carouselAnimateType || "traditional";
       this.initTimer();
       //为不同类型的动画做初始化
       switch (this.animate) {
         case "fade":
           let li = document.querySelector("#carousel-content li");
-          li?.setAttribute("class", "current");
+          li!.setAttribute("class", "current");
           break;
         case "pullpushdoor":
           let lis = document.querySelectorAll("#carousel-content li");
-          lis[this.banner.length - 1]?.setAttribute("class", "background");
+          lis[this.banner.length - 1]!.setAttribute("class", "background");
           lis[0].setAttribute("class", "current");
           break;
       }
       let li = document.querySelector("#indicator ul li");
-      li?.setAttribute("class","current");
+      li!.setAttribute("class", "current");
     },
     toggleCarousel(index: number) {
       this.bannerIndex = index;
@@ -107,10 +103,10 @@ export default defineComponent({
           defaults: this.traditionalToogleCarousel(index);
       }
       let lis = document.querySelectorAll("#indicator>ul>li");
-      for(let i=0;i<lis.length;i++){
-        lis[i].setAttribute("class","");
+      for (let i = 0; i < lis.length; i++) {
+        lis[i].setAttribute("class", "");
       }
-      lis[index].setAttribute("class","current");
+      lis[index].setAttribute("class", "current");
     },
     nextCarousel() {
       if (this.bannerIndex == this.banner.length - 1) {
@@ -146,12 +142,12 @@ export default defineComponent({
       let oldBackground = document.querySelector(
         "#carousel-content ul li.background"
       );
-      oldBackground?.setAttribute("class", "");
+      oldBackground!.setAttribute("class", "");
       //将原当前轮播图变成背景
       let background = document.querySelector(
         "#carousel-content ul li.current"
       );
-      background?.setAttribute("class", "background");
+      background!.setAttribute("class", "background");
       lis[index].setAttribute("class", "current");
     },
   },
@@ -204,7 +200,7 @@ export default defineComponent({
         list-style: none;
         backdrop-filter: blur(10px);
       }
-      li.current{
+      li.current {
         background-color: #42b984bb;
       }
     }

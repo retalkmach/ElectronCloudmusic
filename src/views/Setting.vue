@@ -4,138 +4,123 @@
       <ul>
         <li class="menu-item">
           <span>播放器全屏页面使用专辑图片作为背景</span>
-          <input type="checkbox" name="" id="" class="switch" checked=""/>
+          <div class="menu-item-controller">
+            <el-switch
+              v-model="setting.usePicAsPlayerBackground"
+              inactive-color="#bbbbbb"
+            ></el-switch>
+          </div>
+        </li>
+        <li class="menu-item">
+          <span
+            >播放页面显示频谱
+            <el-popover
+              placement="top-start"
+              title="警告"
+              :width="200"
+              trigger="hover"
+              content="目前该功能开启后会消耗大量性能，在低端机型上可能会出现卡顿现象,后续可能有专项优化"
+              :auto-close="8000"
+            >
+              <template #reference> <i class="el-icon-warning-outline"></i></template>
+            </el-popover>
+          </span>
+          <div class="menu-item-controller">
+            <el-switch
+              v-model="setting.showFrequency"
+              inactive-color="#bbbbbb"
+            ></el-switch>
+          </div>
+        </li>
+        <li class="menu-item">
+          <span>显示翻译后的歌词</span>
+          <div class="menu-item-controller">
+            <el-switch
+              v-model="setting.showTranslatedLyric"
+              inactive-color="#bbbbbb"
+            ></el-switch>
+          </div>
+        </li>
+        <li class="menu-item">
+          <span>首页 banner 切换样式</span>
+          <div class="menu-item-controller">
+            <el-select v-model="setting.carouselAnimateType" :size="'mini'">
+              <el-option
+                v-for="(key, item) in settingOption.carouselAnimateType"
+                :key="item"
+                :label="key"
+                :value="item"
+              ></el-option>
+            </el-select>
+          </div>
         </li>
       </ul>
     </section>
-    <div class="select-menu" data-status="close">
-      <span>test</span>
-      <ul>
-        <li>playlist</li>
-        <li>circle</li>
-        <li>random</li>
-      </ul>
-    </div>
-    <button @click="saveSetting">保存</button>
+    <!-- <button @click="saveSetting">保存</button> -->
   </main>
 </template>
 <script lang="ts">
 import { defineComponent } from "vue";
+import store from "@/store";
+import setting_option from "@/assets/data/setting_options.json";
 
 export default defineComponent({
   setup() {},
   mounted() {
-    this.initStyle();
+    this.getSetting();
+  },
+  data() {
+    return {
+      setting: {},
+      settingOption: setting_option,
+    };
   },
   methods: {
-    initStyle() {
-      let select_menus = document.querySelectorAll(".select-menu");
-      for (let i = 0; i < select_menus.length; i++) {
-        select_menus[i].addEventListener("click", () => {
-          select_menus[i].getAttribute("data-status") == "close"
-            ? select_menus[i].setAttribute("data-status", "open")
-            : select_menus[i].setAttribute("data-status", "close");
-        });
-        console.log(select_menus[i].childNodes);
-        let lis = select_menus[i].childNodes[1].childNodes;
-        for (let j = 0; j < lis.length; j++) {
-          lis[j].addEventListener("click", () => {
-            select_menus[i].childNodes[0].textContent = lis[j].textContent;
-          });
-        }
+    getSetting() {
+      let setting = {};
+      //loading setting
+      if (localStorage.getItem("setting") == null) {
+        console.log("empty setting, will init setting");
+        store.commit("initSetting");
+        console.log("init setting success");
+      } else {
+        setting = JSON.parse(localStorage.getItem("setting")!);
+        console.log("loading setting");
+        this.setting = setting;
+        store.commit("changeSetting", setting);
       }
     },
-    saveSetting() {
-      let ua = navigator.userAgent;
-      let reg = /Electron/;
-      let isElectron = reg.test(ua);
-      console.log(isElectron);
-      let setting = {
-        showPlayerBg: document
-          .querySelector(".switch")!
-          .getAttribute("checked"),
-      };
-      console.log(document
-          .querySelector(".switch"));
-      
-      if (isElectron) {
-        const { ipcRenderer } = (window as any).ipcRenderer;
-        // const fs = window.require("fs");
-        console.log(__dirname);
-        ipcRenderer.send("setting-save", JSON.stringify(setting));
-      } else {
-          localStorage.setting = JSON.stringify(setting);
-      }
+    saveSetting(newSetting: object) {
+      store.commit("changeSetting", newSetting);
+      localStorage.setItem("setting", JSON.stringify(newSetting));
+      console.log("setting was save");
+    },
+  },
+  watch: {
+    setting: {
+      handler(newSetting) {
+        console.log("setting was change");
+        this.saveSetting(newSetting);
+      },
+      deep: true,
     },
   },
 });
 </script>
 
 <style lang="scss" scoped>
-.switch {
-  -webkit-appearance: none;
-  position: relative;
-  width: 35px;
-  height: 20px;
-  background-color: lightgray;
-  border-radius: 10px;
-}
-.switch:after {
-  display: inline-block;
-  position: absolute;
-  left: 0;
-  content: "";
-  width: 20px;
-  height: 20px;
-  border-radius: 50%;
-  background-color: darkgray;
-  transition: 0.15s ease;
-}
-.switch:checked:after {
-  left: 15px;
-  background-color: cornflowerblue;
-}
-
-.select-menu {
-  width: 80px;
-  height: 20px;
-  border: 1px solid gray;
-  border-radius: 2px;
-  cursor: pointer;
-  user-select: none;
-}
-.select-menu ul{
-  transition: 0.25s linear;
-}
-.select-menu[data-status="close"] ul {
-  display: none;
-}
-.select-menu[data-status="open"] ul {
-  display: block;
-  margin-top: 5px;
-  padding: 2px 0;
-  border: 1px solid lightgray;
-}
-.select-menu ul li {
-  height: 24px;
-  list-style: none;
-  line-height: 24px;
-  transition: 0.05s linear;
-}
-.select-menu ul li:hover {
-  background-color: #eee;
-}
 .menu-item {
   position: relative;
-  height: 24px;
+  height: 32px;
   list-style: none;
+  line-height: 32px;
   span {
     position: absolute;
     left: 0;
   }
-  input {
+  .menu-item-controller {
     position: absolute;
-    right: 0;
+    right: 10px;
   }
 }
 </style>

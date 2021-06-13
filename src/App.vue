@@ -6,26 +6,50 @@
     <router-link to="/setting">Setting</router-link> |
     <router-link to="/user">User</router-link>
   </div>
-  <player-full-screen  v-if="showPlayer"/>
+  <player-full-screen v-if="showPlayer" />
   <router-view v-else />
   <player />
-  
 </template>
 
 <script>
 import player from "@/components/Player.vue";
-import PlayerFullScreen from './views/PlayerFullScreen.vue';
+import PlayerFullScreen from "./views/PlayerFullScreen.vue";
+import setting from "@/views/Setting.vue";
+import store from "@/store";
 export default {
   name: "app",
   components: {
     player,
-    PlayerFullScreen
+    PlayerFullScreen,
+    setting,
   },
-  computed:{
-    showPlayer(){
+  mounted() {
+    this.getSetting();
+  },
+  computed: {
+    showPlayer() {
       return this.$store.state.showPlayer;
-    }
-  }
+    },
+  },
+  methods: {
+    getSetting() {
+      console.log("test");
+      let setting = {};
+      //loading setting
+      if (localStorage.getItem("setting") == null) {
+        console.log("empty setting, will init setting");
+        store.commit("initSetting");
+      } else {
+        console.log("loading setting");
+        setting = JSON.parse(localStorage.getItem("setting"));
+        if(setting.version<this.$store.state.defaultSetting.version){
+          store.commit("upgradeSetting");
+          return false;
+        }
+        store.commit("changeSetting", setting);
+      }
+    },
+  },
 };
 </script>
 
@@ -57,17 +81,17 @@ p {
   }
 }
 
-#player{
+#player {
   position: absolute;
   top: 0;
   left: 0;
-  
 }
-main{
+main {
   height: calc(100vh - 80px - 68px);
   overflow-y: scroll;
+  overflow-x: hidden;
 }
-a{
+a {
   color: black;
 }
 </style>

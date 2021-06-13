@@ -19,7 +19,6 @@
     <login />
   </el-dialog>
   <!-- 我的歌单 -->
-  
 </template>
 <script lang="ts">
 import { Vue } from "vue-class-component";
@@ -50,7 +49,7 @@ export default defineComponent({
     checkLogin() {
       axios.defaults.withCredentials = true;
       axios
-        .post("/login/status", { cookie: localStorage.getItem("cookie") })
+        .post("/login/status", { cookie: localStorage.getItem("cookie") || "" })
         .then((res) => {
           if (res.data.data.profile) {
             console.log(res);
@@ -75,11 +74,15 @@ export default defineComponent({
       let day = date.getDate();
       return `${year} 年 ${month} 月 ${day} 日`;
     },
-    getData(){
-      axios.post("/user/subcount",{ cookie: localStorage.getItem("cookie") }).then(res =>{
-        console.log(res);        
-      })
-    }
+    getData() {
+      axios
+        .post("/user/subcount", {
+          cookie: localStorage.getItem("cookie") || "",
+        })
+        .then((res) => {
+          console.log(res);
+        });
+    },
   },
 });
 </script>

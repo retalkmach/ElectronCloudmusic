@@ -68,7 +68,7 @@ export default defineComponent({
     },
     getRecommendPlaylist() {
       axios
-        .post("/recommend/resource", { cookie: localStorage.getItem("cookie") })
+        .post("/recommend/resource", { cookie: localStorage.getItem("cookie")||"" })
         .then((res) => {
           console.log(res);
           for (let i = 0; i < res.data.recommend.length; i++) {
