@@ -1,11 +1,11 @@
-import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router'
-import Home from '../views/Home.vue'
+import { createRouter, createWebHashHistory, RouteRecordRaw } from 'vue-router';
+import Home from '../views/Home.vue';
 
 const routes: Array<RouteRecordRaw> = [
   {
     path: '/',
     name: 'Home',
-    component: Home
+    component: Home,
   },
   {
     path: '/test',
@@ -13,45 +13,45 @@ const routes: Array<RouteRecordRaw> = [
     // route level code-splitting
     // this generates a separate chunk (about.[hash].js) for this route
     // which is lazy-loaded when the route is visited.
-    component: () => import(/* webpackChunkName: "about" */ '../views/Test.vue')
+    component: () => import(/* webpackChunkName: "about" */ '../views/Test.vue'),
   }, {
     path: '/search',
     name: 'search',
-    component: () => import('../views/Search.vue')
+    component: () => import('../views/Search.vue'),
   }, {
     path: '/searchresult/:keyword',
     name: 'searchresult',
-    component: () => import('../views/SearchResult.vue')
+    component: () => import('../views/SearchResult.vue'),
   }, {
     path: '/playerfullscreen',
     name: 'playerfullscreen',
-    component: () => import('../views/PlayerFullScreen.vue')
+    component: () => import('../views/PlayerFullScreen.vue'),
   }, {
     path: '/setting',
     name: 'setting',
-    component: () => import('../views/Setting.vue')
+    component: () => import('../views/Setting.vue'),
   }, {
     path: '/artist/:artistID',
     name: 'artist',
-    component: () => import("../views/Artist.vue")
+    component: () => import('../views/Artist.vue'),
   }, {
     path: '/album/:albumID',
     name: 'album',
-    component: () => import("../views/Album.vue")
+    component: () => import('../views/Album.vue'),
   }, {
     path: '/user',
     name: 'user',
-    component: () => import("../views/User.vue")
+    component: () => import('../views/User.vue'),
   }, {
     path: '/playlist/:playlistID',
     name: 'playlist',
-    component: () => import("../views/Playlist.vue")
-  }
-]
+    component: () => import('../views/Playlist.vue'),
+  },
+];
 
 const router = createRouter({
   history: createWebHashHistory(),
-  routes
-})
+  routes,
+});
 
-export default router
+export default router;

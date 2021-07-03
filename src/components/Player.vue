@@ -57,16 +57,17 @@
         @click="changeMusic(index)"
       >
         {{ music.name }}
+        <span class="close" @click="removeMusic(index)"><i class="el-icon-close"></i></span>
       </li>
     </div>
   </div>
 </template>
 <script lang="ts">
-import { Vue } from "vue-class-component";
-import { defineComponent } from "vue";
-import { Store } from "vuex";
-import axios from "../axios";
-import store from "@/store";
+import { Vue } from 'vue-class-component';
+import { defineComponent } from 'vue';
+import { Store } from 'vuex';
+import store from '@/store';
+import axios from '../axios';
 
 export default defineComponent({
   setup() {
@@ -93,7 +94,7 @@ export default defineComponent({
       duration: 0,
       showPlaylist: false,
       DOMArray: [Object as any],
-      artists: [""],
+      artists: [''],
     };
   },
   watch: {
@@ -107,36 +108,36 @@ export default defineComponent({
   methods: {
     playMusic() {
       this.updateMusicInfo();
-      this.DOMArray[3].addEventListener("canplay", () => {
+      this.DOMArray[3].addEventListener('canplay', () => {
         this.DOMArray[3].play();
       });
     },
     changeMusic(index: number) {
-      store.commit("changePlaylistCursor", index);
+      store.commit('changePlaylistCursor', index);
     },
     updateMusicInfo() {
-      let id: number = this.musicID;
-      //preset played duration
-      this.DOMArray[6].innerText = "0:00";
-      //update player music address
+      const id: number = this.musicID;
+      // preset played duration
+      this.DOMArray[6].innerText = '0:00';
+      // update player music address
       axios
         .post(`song/url?id=${id}`, {
-          cookie: localStorage.getItem("cookie") || "",
+          cookie: localStorage.getItem('cookie') || '',
         })
         .then((res) => {
-          this.DOMArray[3].setAttribute("src", res.data.data[0].url);
+          this.DOMArray[3].setAttribute('src', res.data.data[0].url);
         });
       axios.get(`/song/detail?ids=${id}`).then((res) => {
-        let data = res.data.songs[0];
+        const data = res.data.songs[0];
         this.DOMArray[4].innerText = data.name;
         this.artists = [];
-        for (let artist of data.ar) {
+        for (const artist of data.ar) {
           this.artists.push(artist.name);
         }
         this.DOMArray[7].innerText = `${Math.floor(
-          data.dt / 1000 / 60
+          data.dt / 1000 / 60,
         )}:${this.autoAddZero(Math.ceil((data.dt / 1000) % 60))}`;
-        this.DOMArray[9].setAttribute("src", data.al.picUrl);
+        this.DOMArray[9].setAttribute('src', data.al.picUrl);
       });
     },
     toggleShowPlaylist() {
@@ -161,19 +162,22 @@ export default defineComponent({
         ? this.changeMusic(this.$store.state.playlist.length)
         : this.changeMusic(this.$store.state.playlistCursor - 1);
     },
+    removeMusic(index:number){
+      store.commit("removeMusicFromPlaylist",index);
+    },
     init() {
-      let togglePlayStatus = document.querySelector("#toggle-play-status");
-      let prev = document.querySelector("#prev");
-      let next = document.querySelector("#next");
-      let musicPlayer = document.querySelector("audio");
-      let musicName = document.querySelector("#music-name");
-      let artistName = document.querySelector("#artist-name");
-      let playedDuration = document.querySelector("#played-duration");
-      let musicDuration = document.querySelector("#music-duration");
-      let progressBar = document.querySelector("#progress-bar");
-      let albumPic = document.querySelector("#album-pic");
-      let playlist = document.querySelector("#playlist");
-      //pop old data
+      const togglePlayStatus = document.querySelector('#toggle-play-status');
+      const prev = document.querySelector('#prev');
+      const next = document.querySelector('#next');
+      const musicPlayer = document.querySelector('audio');
+      const musicName = document.querySelector('#music-name');
+      const artistName = document.querySelector('#artist-name');
+      const playedDuration = document.querySelector('#played-duration');
+      const musicDuration = document.querySelector('#music-duration');
+      const progressBar = document.querySelector('#progress-bar');
+      const albumPic = document.querySelector('#album-pic');
+      const playlist = document.querySelector('#playlist');
+      // pop old data
       this.DOMArray.pop();
       // push DOM object
       this.DOMArray.push(togglePlayStatus);
@@ -187,24 +191,24 @@ export default defineComponent({
       this.DOMArray.push(progressBar);
       this.DOMArray.push(albumPic);
       this.DOMArray.push(playlist);
-      //get data
-      let duration: number = 0;
-      //add player events
-      this.DOMArray[3].addEventListener("durationchange", () => {
+      // get data
+      let duration = 0;
+      // add player events
+      this.DOMArray[3].addEventListener('durationchange', () => {
         duration = this.DOMArray[3].duration;
         this.duration = duration;
       });
-      this.DOMArray[3].addEventListener("timeupdate", () => {
+      this.DOMArray[3].addEventListener('timeupdate', () => {
         this.currentTime = this.DOMArray[3].currentTime;
         this.DOMArray[6].innerText = this.parseTime(this.currentTime);
       });
-      this.DOMArray[3].addEventListener("pause", () => {
-        this.DOMArray[0].className = "play";
+      this.DOMArray[3].addEventListener('pause', () => {
+        this.DOMArray[0].className = 'play';
       });
-      this.DOMArray[3].addEventListener("play", () => {
-        this.DOMArray[0].className = "pause";
+      this.DOMArray[3].addEventListener('play', () => {
+        this.DOMArray[0].className = 'pause';
       });
-      this.DOMArray[3].addEventListener("ended", () => {
+      this.DOMArray[3].addEventListener('ended', () => {
         this.playNextMusic();
       });
     },
@@ -213,12 +217,12 @@ export default defineComponent({
     },
     parseTime(time: number) {
       return `${Math.floor(time / 60)}:${this.autoAddZero(
-        Math.floor(time % 60)
+        Math.floor(time % 60),
       )}`;
     },
-    musicFrequency(){
-      let audioCtx = new AudioContext();
-    }
+    musicFrequency() {
+      const audioCtx = new AudioContext();
+    },
   },
 });
 </script>
@@ -387,6 +391,11 @@ $primary-color-click: #3da878;
     text-align: left;
     text-overflow: ellipsis;
     white-space: nowrap;
+    .close{
+      position: absolute;
+      right: 5px;
+      color: lightgray;
+    }
   }
 }
 // 按钮样式

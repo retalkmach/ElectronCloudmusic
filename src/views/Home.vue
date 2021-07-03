@@ -13,21 +13,11 @@
         </el-carousel-item>
       </el-carousel>
     </div>
-    <div id="recommend-playlist" v-if="recommendPlaylist.length > 0">
-      <div class="card" v-for="playlist in recommendPlaylist" :key="playlist">
-        <router-link
-          :to="{
-            name: 'playlist',
-            params: { playlistID: playlist.id },
-          }"
-        >
-          <div class="img-container">
-            <img :src="playlist.picUrl" alt="" />
-          </div>
-          <span>{{ playlist.name }}</span>
-        </router-link>
-      </div>
-    </div>
+    <playlistshow
+      v-if="recommendPlaylist.length > 0"
+      :playlists="recommendPlaylist"
+      :rowLimits="2"
+    />
   </main>
 </template>
 
@@ -35,25 +25,26 @@
 import { Vue } from "vue-class-component";
 import { defineComponent } from "vue";
 import { Store } from "vuex";
-import router from "@/router/index";
-import axios from "../axios";
 import store from "@/store";
-import carousel from "../components/Carousel.vue"
+import playlistshow from "@/components/Playlistshow.vue";
+import axios from "../axios";
+import carousel from "../components/Carousel.vue";
 
 export default defineComponent({
   mounted() {
     this.getBanner();
     this.getRecommendPlaylist();
   },
-  components:{
-    carousel
+  components: {
+    carousel,
+    playlistshow,
   },
   data() {
-    let banner: Array<object> = [];
-    let recommendPlaylist: Array<object> = [];
+    const banner: Array<object> = [];
+    const recommendPlaylist: Array<object> = [];
     return {
-      banner: banner,
-      recommendPlaylist: recommendPlaylist,
+      banner,
+      recommendPlaylist,
     };
   },
   methods: {
@@ -62,13 +53,13 @@ export default defineComponent({
         for (let i = 0; i < res.data.banners.length; i++) {
           this.banner.push(res.data.banners[i]);
         }
-        console.log(res);
-        console.log(this.banner);
       });
     },
     getRecommendPlaylist() {
       axios
-        .post("/recommend/resource", { cookie: localStorage.getItem("cookie")||"" })
+        .post("/recommend/resource", {
+          cookie: localStorage.getItem("cookie") || "",
+        })
         .then((res) => {
           console.log(res);
           for (let i = 0; i < res.data.recommend.length; i++) {
@@ -88,18 +79,7 @@ export default defineComponent({
     aspect-ratio: 27/10;
   }
 }
-#recommend-playlist {
-  display: grid;
-  height: 500px;
-  margin: 20px auto;
-  overflow: hidden;
-  grid-template-columns: repeat(auto-fill,minmax(220px,1fr));
-  grid-auto-flow: row;
-  grid-gap: minmax(0,10px);
-  justify-content: center;
-  justify-items: center;
-  grid-template-rows: 1fr 1fr;
-}
+
 .card {
   display: inline-block;
   width: 220px;

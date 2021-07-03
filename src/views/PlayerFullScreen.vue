@@ -273,12 +273,15 @@ export default defineComponent({
   }
 }
 #lyric {
-  display: inline-block;
+  display: inline-flex;
   width: 45vh;
   max-height: 45vh;
   overflow: scroll;
   overflow-x: hidden;
   scroll-behavior: smooth;
+  justify-content: center;
+  align-items: center;
+  vertical-align: text-bottom;
   ul {
     position: relative;
     max-width: 45vh;

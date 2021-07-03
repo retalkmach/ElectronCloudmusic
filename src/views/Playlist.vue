@@ -41,17 +41,17 @@
       </ul>
     </div>
     <div v-else>
-      
+
     </div>
   </main>
 </template>
 <script lang="ts">
-import { Vue } from "vue-class-component";
-import { defineComponent } from "vue";
-import { Store } from "vuex";
-import router from "@/router/index";
-import axios from "../axios";
-import store from "@/store";
+import { Vue } from 'vue-class-component';
+import { defineComponent } from 'vue';
+import { Store } from 'vuex';
+import router from '@/router/index';
+import store from '@/store';
+import axios from '../axios';
 
 export default defineComponent({
   setup() {},
@@ -59,10 +59,10 @@ export default defineComponent({
     this.getData();
   },
   data() {
-    let songs: Array<any> = [];
+    const songs: Array<any> = [];
     return {
       playlist_info: Object as any,
-      songs: songs,
+      songs,
       data_loadready: false,
       // albumData: albumData
     };
@@ -70,7 +70,7 @@ export default defineComponent({
   methods: {
     getData() {
       axios
-        .post(`/playlist/detail?id=${this.$route.params.playlistID}`,{ cookie: localStorage.getItem("cookie") })
+        .post(`/playlist/detail?id=${this.$route.params.playlistID}`, { cookie: localStorage.getItem('cookie') })
         .then((res) => {
           console.log(res);
           this.songs = res.data.playlist.tracks;
@@ -79,27 +79,27 @@ export default defineComponent({
         });
     },
     playMusic(index: number) {
-      let newPlaylist = [];
+      const newPlaylist = [];
       for (let i = 0; i < this.songs.length; i++) {
-        let artists: Array<any> = [];
-        let song = {
+        const artists: Array<any> = [];
+        const song = {
           id: this.songs[i].id,
           name: this.songs[i].name,
-          artists: artists,
+          artists,
         };
         for (let j = 0; j < this.songs[i].ar.length; j++) {
           song.artists.push(j < this.songs[i].ar[j].name);
         }
         newPlaylist.push(song);
       }
-      let newData = {
+      const newData = {
         playlist: newPlaylist,
         cursor: index,
       };
-      store.commit("replacePlaylist", newData);
+      store.commit('replacePlaylist', newData);
     },
     autoAddClass(index: number) {
-      return index % 2 == 0 ? "bg" : "";
+      return index % 2 == 0 ? 'bg' : '';
     },
   },
 });

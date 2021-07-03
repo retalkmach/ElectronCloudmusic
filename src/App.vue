@@ -7,21 +7,20 @@
     <router-link to="/user">User</router-link>
   </div>
   <player-full-screen v-if="showPlayer" />
-  <router-view v-else />
+  <router-view v-else :key="$route.fullPath"/>
   <player />
 </template>
 
 <script>
-import player from "@/components/Player.vue";
-import PlayerFullScreen from "./views/PlayerFullScreen.vue";
-import setting from "@/views/Setting.vue";
-import store from "@/store";
+import player from '@/components/Player.vue';
+import store from '@/store';
+import PlayerFullScreen from './views/PlayerFullScreen.vue';
+
 export default {
-  name: "app",
+  name: 'app',
   components: {
     player,
     PlayerFullScreen,
-    setting,
   },
   mounted() {
     this.getSetting();
@@ -33,20 +32,20 @@ export default {
   },
   methods: {
     getSetting() {
-      console.log("test");
+      console.log('test');
       let setting = {};
-      //loading setting
-      if (localStorage.getItem("setting") == null) {
-        console.log("empty setting, will init setting");
-        store.commit("initSetting");
+      // loading setting
+      if (localStorage.getItem('setting') == null) {
+        console.log('empty setting, will init setting');
+        store.commit('initSetting');
       } else {
-        console.log("loading setting");
-        setting = JSON.parse(localStorage.getItem("setting"));
-        if(setting.version<this.$store.state.defaultSetting.version){
-          store.commit("upgradeSetting");
-          return false;
+        console.log('loading setting');
+        setting = JSON.parse(localStorage.getItem('setting'));
+        if (setting.version < this.$store.state.defaultSetting.version) {
+          store.commit('upgradeSetting');
+          return;
         }
-        store.commit("changeSetting", setting);
+        store.commit('changeSetting', setting);
       }
     },
   },

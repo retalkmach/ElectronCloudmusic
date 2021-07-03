@@ -28,28 +28,29 @@
 </template>
 
 <script lang="ts">
-import { Vue } from "vue-class-component";
-import { defineComponent } from "vue";
-import { Store } from "vuex";
-import router from "@/router/index";
-import axios from "../axios";
+import { Vue } from 'vue-class-component';
+import { defineComponent } from 'vue';
+import { Store } from 'vuex';
+import router from '@/router/index';
+import axios from '../axios';
+
 export default defineComponent({
   data() {
     return {
-      keyword: "",
+      keyword: '',
       suggestcontent: [],
       throttle: false,
     };
   },
   methods: {
     getSuggest(keyword: string) {
-      if (keyword == "") return false;
+      if (keyword == '') return false;
       if (!this.throttle) {
         axios
           .get(`/search/suggest?keywords=${keyword}&type=mobile`)
           .then((res) => {
             console.log(res);
-            let data = res.data.result.allMatch;
+            const data = res.data.result.allMatch;
             console.log(data);
             this.suggestcontent = data;
             return data;
@@ -57,14 +58,14 @@ export default defineComponent({
       }
     },
     location(keyword: string) {
-      router.push({ name: "searchresult", params: { keyword: keyword } });
+      router.push({ name: 'searchresult', params: { keyword } });
     },
     networkThrottle() {
       if (!this.throttle) {
         this.throttle = true;
         setTimeout(() => {
           this.throttle = false;
-          this.getSuggest(document.querySelector("input")!.value);
+          this.getSuggest(document.querySelector('input')!.value);
         }, 750);
       }
     },

@@ -33,10 +33,40 @@
           </div>
         </li>
         <li class="menu-item">
+          <span
+            >更新听歌记录
+            <el-popover
+              placement="top-start"
+              title="提示"
+              :width="200"
+              trigger="hover"
+              content="开启后播放完一首歌后会向网易云服务器报告听歌记录，个人主页的听歌排行会更新数据"
+              :auto-close="8000"
+            >
+              <template #reference> <i class="el-icon-warning-outline"></i></template>
+            </el-popover>
+          </span>
+          <div class="menu-item-controller">
+            <el-switch
+              v-model="setting.feedback"
+              inactive-color="#bbbbbb"
+            ></el-switch>
+          </div>
+        </li>
+        <li class="menu-item">
           <span>显示翻译后的歌词</span>
           <div class="menu-item-controller">
             <el-switch
               v-model="setting.showTranslatedLyric"
+              inactive-color="#bbbbbb"
+            ></el-switch>
+          </div>
+        </li>
+        <li class="menu-item">
+          <span>自动签到</span>
+          <div class="menu-item-controller">
+            <el-switch
+              v-model="setting.autoSign"
               inactive-color="#bbbbbb"
             ></el-switch>
           </div>
@@ -60,9 +90,9 @@
   </main>
 </template>
 <script lang="ts">
-import { defineComponent } from "vue";
-import store from "@/store";
-import setting_option from "@/assets/data/setting_options.json";
+import { defineComponent } from 'vue';
+import store from '@/store';
+import setting_option from '@/assets/data/setting_options.json';
 
 export default defineComponent({
   setup() {},
@@ -78,28 +108,28 @@ export default defineComponent({
   methods: {
     getSetting() {
       let setting = {};
-      //loading setting
-      if (localStorage.getItem("setting") == null) {
-        console.log("empty setting, will init setting");
-        store.commit("initSetting");
-        console.log("init setting success");
+      // loading setting
+      if (localStorage.getItem('setting') == null) {
+        console.log('empty setting, will init setting');
+        store.commit('initSetting');
+        console.log('init setting success');
       } else {
-        setting = JSON.parse(localStorage.getItem("setting")!);
-        console.log("loading setting");
+        setting = JSON.parse(localStorage.getItem('setting')!);
+        console.log('loading setting');
         this.setting = setting;
-        store.commit("changeSetting", setting);
+        store.commit('changeSetting', setting);
       }
     },
     saveSetting(newSetting: object) {
-      store.commit("changeSetting", newSetting);
-      localStorage.setItem("setting", JSON.stringify(newSetting));
-      console.log("setting was save");
+      store.commit('changeSetting', newSetting);
+      localStorage.setItem('setting', JSON.stringify(newSetting));
+      console.log('setting was save');
     },
   },
   watch: {
     setting: {
       handler(newSetting) {
-        console.log("setting was change");
+        console.log('setting was change');
         this.saveSetting(newSetting);
       },
       deep: true,
