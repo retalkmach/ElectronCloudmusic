@@ -8,6 +8,26 @@
     </ul>
   </div>
   <div id="music-info">
+    <div id="info">
+      <p id="name">{{ musicInfo.name }}</p>
+      <p>
+        <span class="artists">
+          <router-link
+            :to="'/artist/' + artist.id"
+            class="artist"
+            v-for="artist in musicInfo.artists"
+            :key="artist.name"
+            >{{ artist.name }}</router-link
+          >
+        </span>
+        <span class="delimiter">-</span>
+        <span class="album">
+          <router-link :to="'/album/' + musicInfo.album.id">{{
+            musicInfo.album.name
+          }}</router-link>
+        </span>
+      </p>
+    </div>
     <div id="imgbox">
       <img src="@/assets/images/unknowAlbum.png" alt="" />
     </div>
@@ -35,6 +55,16 @@ export default defineComponent({
     this.getLyric();
     this.preventScrollLyric();
     this.initMusicAnalyser();
+    //获取布局信息
+    let lyric = <HTMLElement>document.querySelector("#lyric");
+    this.layoutData.lyricHeight = lyric.offsetWidth;
+    this.layoutData.windowWidth = document.body.offsetWidth;
+    let gutter = (this.layoutData.windowWidth - 128 * 5) / 128 / 2;
+    console.log(gutter);
+    let lis: any = document.querySelectorAll("#frequency li");
+    for (let i = 0; i < lis.length; i++) {
+      lis[i].style.margin = `0px ${gutter}px`;
+    }
     // this.debounceSwitchLyric(false);
     //add listener to change lyric
     // document.querySelector("#container>audio")?.addEventListener("play",()=>{
@@ -51,15 +81,28 @@ export default defineComponent({
   },
   data() {
     let audioDataArr: Uint8Array = new Uint8Array(256);
+    let lyric: Array<any> = [];
+    let artist = { name: String, id: Number };
+    let musicInfo = {
+      artists: [artist],
+      album: { name: String, id: Number },
+      name: String,
+    };
+    let layoutData = {
+      lyricHeight: 0,
+      windowWidth: 0,
+    };
     // let musicAnalyser: AnalyserNode = new AudioContext().createAnalyser();
     return {
-      lyric: [Object as any],
+      lyric: lyric,
       rowlyric: Object as any,
       translatedLyric: [Object as any],
       canScrollLyric: true,
       preventScrollTimeout: 0,
       audioDataArr: audioDataArr,
       animation: 0,
+      musicInfo: musicInfo,
+      layoutData: layoutData,
     };
   },
   computed: {
@@ -77,6 +120,9 @@ export default defineComponent({
     musicID() {
       this.updateCurrentMusic();
       this.getLyric();
+      //将歌词调整到初始状态
+      let lyric = <HTMLElement>document.querySelector("#lyric");
+      lyric.scrollTop = 0;
     },
     currentTime() {
       this.updateLyric();
@@ -91,6 +137,20 @@ export default defineComponent({
         let imgbox = document.querySelector("#imgbox>img");
         let backgroundimage = document.querySelector("#background>img");
         imgbox!.setAttribute("src", picUrl);
+        this.musicInfo.album.name = res.data.songs[0].al.name;
+        this.musicInfo.album.id = res.data.songs[0].al.id;
+        this.musicInfo.name = res.data.songs[0].name;
+        //清空原有歌手信息
+        while (this.musicInfo.artists.length) {
+          this.musicInfo.artists.pop();
+        }
+        for (let i = 0; i < res.data.songs[0].ar.length; i++) {
+          let artist = {
+            name: res.data.songs[0].ar[i].name,
+            id: res.data.songs[0].ar[i].id,
+          };
+          this.musicInfo.artists.push(artist);
+        }
         if (this.setting.usePicAsPlayerBackground == true) {
           backgroundimage!.setAttribute("src", picUrl);
         }
@@ -104,6 +164,8 @@ export default defineComponent({
       });
     },
     progressLyric() {
+      //clear origin data
+      this.lyric = [];
       //check this music is puremusic?
       if (this.rowlyric.nolyric) {
         let obj = { time: 0, content: "纯音乐，请欣赏" };
@@ -112,7 +174,6 @@ export default defineComponent({
       }
       let temp: string = this.rowlyric.lrc.lyric;
       let lyricSliced = temp.split("\n");
-      this.lyric = [];
       for (let i = 0; i < lyricSliced.length; i++) {
         let tempTime = lyricSliced[i].slice(1, lyricSliced[i].indexOf("]"));
         let tempContent = lyricSliced[i].slice(lyricSliced[i].indexOf("]") + 1);
@@ -161,10 +222,15 @@ export default defineComponent({
       let time = this.currentTime;
       for (let i = 0; i < this.lyric.length; i++) {
         if (i == this.lyric.length - 1) {
-          this.switchLyric(Math.abs(i - 1));
+          //部分歌曲最后一句歌词内容空白且时间为NaN,导致显示最后一句歌词时显示异常
+          if (isNaN(this.lyric[i].time)) {
+            this.switchLyric(i - 1);
+          } else {
+            this.switchLyric(i);
+          }
           break;
         }
-        if (this.lyric[i].time < time && this.lyric[i + 1].time > time) {
+        if (this.lyric[i].time <= time && this.lyric[i + 1].time >= time) {
           this.switchLyric(i);
           break;
         }
@@ -175,8 +241,9 @@ export default defineComponent({
       DOMS.forEach((DOM) => {
         DOM.className = "";
       });
-      console.log(i);
-      
+      if (DOMS.length == 0) {
+        return false;
+      }
       DOMS[i].className = "current";
       this.scrollLyric(i);
     },
@@ -186,7 +253,9 @@ export default defineComponent({
         let ul = <HTMLElement>document.querySelector("#lyric ul");
         let lyric = document.querySelector("#lyric")!;
         let offset = DOM.offsetTop;
-        offset > 200 ? (lyric.scrollTop = offset - 100) : false;
+        offset > this.layoutData.lyricHeight / 2
+          ? (lyric.scrollTop = offset - this.layoutData.lyricHeight / 2 + 30)
+          : false;
       }
     },
     preventScrollLyric() {
@@ -261,6 +330,27 @@ export default defineComponent({
 #music-info {
   margin: 20px auto;
 }
+#info {
+  height: 60px;
+  #name {
+    font-weight: 500;
+    font-size: 1.5em;
+  }
+  :not(#name) {
+    color: gray;
+  }
+  .artist:not(:last-child)::after {
+    content: "/";
+    margin: 0 2px;
+    color: lightgray;
+  }
+  .delimiter {
+    margin: 0 8px;
+  }
+  a {
+    text-decoration: none;
+  }
+}
 #imgbox {
   display: inline-block;
   width: 45vh;
@@ -273,21 +363,20 @@ export default defineComponent({
   }
 }
 #lyric {
-  display: inline-flex;
+  display: inline-block;
   width: 45vh;
-  max-height: 45vh;
-  overflow: scroll;
+  height: 45vh;
+  overflow-y: scroll;
   overflow-x: hidden;
   scroll-behavior: smooth;
-  justify-content: center;
-  align-items: center;
-  vertical-align: text-bottom;
   ul {
     position: relative;
     max-width: 45vh;
+    margin: 0;
     padding: 0;
     scroll-snap-type: y mandatory;
     transition: linear 0.35s;
+    vertical-align: middle;
     li {
       // height: 24px;
       max-width: 45vh;
@@ -318,6 +407,7 @@ export default defineComponent({
   height: 100vh;
   z-index: -1;
   filter: blur(20px);
+  opacity: 0.25;
 }
 #frequency {
   position: absolute;
@@ -348,19 +438,5 @@ export default defineComponent({
       // transform: translateZ(1px);
     }
   }
-}
-
-//美化播放页滚动条样式
-::-webkit-scrollbar {
-  width: 12px;
-  height: auto;
-  background: none;
-}
-::-webkit-scrollbar-button {
-  display: none;
-}
-::-webkit-scrollbar-thumb {
-  border-radius: 6px;
-  background-color: #dddddd44;
 }
 </style>

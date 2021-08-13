@@ -1,33 +1,70 @@
 <template>
   <div id="grid-container">
-    <div class="card" v-for="playlist in playlists" :key="playlist">
-      <router-link
-        :to="{
-          name: 'playlist',
-          params: { playlistID: playlist.id },
-        }"
-      >
-        <div class="img-container">
-          <img :src="playlist.picUrl || playlist.coverImgUrl" alt="" />
-        </div>
-        <span>{{ playlist.name }}</span>
-      </router-link>
+    <div class="card" v-for="playlist in playlistData" :key="playlist.id">
+      <div class="warpper" >
+        <router-link
+          :to="{
+            name: 'playlist',
+            params: { playlistID: playlist.id },
+          }"
+        >
+          <div class="img-container">
+            <img :src="playlist.picUrl || playlist.coverImgUrl" alt="" />
+          </div>
+          <span>{{ playlist.name }}</span>
+        </router-link>
+      </div>
     </div>
   </div>
 </template>
 <script lang="ts">
-import { defineComponent } from 'vue';
+import { use } from "element-plus/lib/locale";
+import { defineComponent } from "vue";
 
 export default defineComponent({
-  props: ['playlists', 'rowLimits'],
-  setup() {},
+  props: ["playlists", "rowLimits", "showCondition", "userId"],
+  beforeMount() {
+    for(let i=0;i<this.playlists.length;i++){
+      if(this.checkShow(this.playlists[i].userId)){
+        this.playlistData.push(this.playlists[i]);
+      }
+    }
+  },
   computed: {
-    height():string {
+    height(): string {
       if (this.rowLimits) {
         let temp = `${this.rowLimits * 250}px`;
         return temp;
       }
-      return 'auto';
+      return "auto";
+    },
+  },
+  data(){
+    let playlists:Array<object> = [];
+    return{
+      playlistData:playlists
+    }
+  },
+  methods: {
+    checkShow(pluserId: number): boolean {
+      switch (this.showCondition) {
+        case "all":
+          return true;
+        case "created":
+          if (this.userId == pluserId) {
+            return true;
+          } else {
+            return false;
+          }
+        case "favorited":
+          if (this.userId != pluserId) {
+            return true;
+          } else {
+            return false;
+          }
+        default:
+          return true;
+      }
     },
   },
 });
@@ -44,7 +81,7 @@ export default defineComponent({
   grid-auto-flow: row;
   justify-content: center;
   justify-items: center;
-  grid-template-rows: 1fr 1fr;
+  grid-template-rows: 1fr;
 }
 .card {
   display: inline-block;

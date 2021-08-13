@@ -2,9 +2,9 @@
   <div id="carousel" :data-animation="animate">
     <div id="carousel-content">
       <ul>
-        <li v-for="item in banner" :key="item" class="carousel-item">
+        <li v-for="(item, index) in banner" :key="item" class="carousel-item">
           <div class="img-container">
-            <img :src="item.imageUrl" alt="" />
+            <img :src="item.imageUrl" alt="" @click="processJump(index)" />
           </div>
         </li>
       </ul>
@@ -44,12 +44,18 @@ export default defineComponent({
     clearInterval(this.carouselTimer);
   },
   data() {
-    let banner: Array<object> = [];
+    let banner: Array<any> = [];
     return {
       banner: banner,
       bannerIndex: 0,
       carouselTimer: 0,
       animate: "",
+      type: {
+        1: "music",
+        10: "album",
+        100: "artist",
+        1000: "playlist",
+      },
     };
   },
   methods: {
@@ -61,6 +67,28 @@ export default defineComponent({
         console.log(res);
         console.log(this.banner);
       });
+    },
+    processJump(index: number) {
+      console.log(this.banner[index].targetType);
+      console.log(typeof this.banner[index].targetType);
+      switch (this.banner[index].targetType) {
+        // case 1:
+        //   store.commit("changeMusicID", this.banner[index].targetId);
+        //   break;
+        case 10:
+          this.$router.push({ path: "/album/" + this.banner[index].targetId });
+          break;
+        case 100:
+          this.$router.push({ path: "/artist/" + this.banner[index].targetId });
+          break;
+        default:
+          return false;
+      }
+      // if (this.banner[index].targetType == 1) {
+      //   this.$store.commit("changeMusicId",this.banner[index].targetId);
+      // }else if(this.type[this.banner[index].targetType]){
+
+      // }
     },
     initTimer() {
       clearInterval(this.carouselTimer);

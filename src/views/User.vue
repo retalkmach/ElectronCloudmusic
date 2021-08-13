@@ -10,7 +10,7 @@
     />
     <p>
       {{ userData.nickname || "" }}
-      <el-button round @click="sign" :size="'mini'" disabled="signed"
+      <el-button round @click="sign" :size="'mini'" :disabled="signed"
         >签到</el-button
       >
     </p>
@@ -26,10 +26,27 @@
       >登录</el-button
     >
     <el-dialog title="登录" v-model="showLoginDialog">
-      <login />
+      <login @logged="loginSuccess" />
     </el-dialog>
     <!-- 我的歌单 -->
-    <playlistshow v-if="playlist.length > 0" :playlists="playlist" />
+    <el-collapse v-model="collapseShow">
+      <el-collapse-item title="我创建的歌单">
+        <playlistshow
+          v-if="playlist.length > 0"
+          :playlists="playlist"
+          :showCondition="'created'"
+          :userId="userData.userId"
+        />
+      </el-collapse-item>
+      <el-collapse-item title="我收藏的歌单">
+        <playlistshow
+          v-if="playlist.length > 0"
+          :playlists="playlist"
+          :showCondition="'favorited'"
+          :userId="userData.userId"
+        />
+      </el-collapse-item>
+    </el-collapse>
   </main>
 </template>
 <script lang="ts">
@@ -62,15 +79,20 @@ export default defineComponent({
       playlist: playlist,
       whitePic:
         "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==",
+      collapseShow: [],
     };
   },
   methods: {
+    loginSuccess() {
+      this.showLoginDialog = false;
+      this.checkLogin();
+      this.checkSign();
+    },
     checkLogin() {
       axios.defaults.withCredentials = true;
       axios
-        .post("/login/status", {
+        .post(`/login/status?timeStamps=${Date.now()}`, {
           cookie: localStorage.getItem("cookie") || "",
-          timeStamps: Date.now(),
         })
         .then((res) => {
           if (res.data.data.profile) {
@@ -82,12 +104,11 @@ export default defineComponent({
     },
     checkSign() {
       axios
-        .post("/yunbei/today", {
+        .post(`/yunbei/today?timeStamps=${Date.now()}`, {
           cookie: localStorage.getItem("cookie") || "",
-          timeStamps: Date.now(),
         })
         .then((res) => {
-          if (res.data.data.shells > 0) {
+          if (res.data.data) {
             this.signed = true;
           } else {
             if (this.$store.state.setting.autoSign) {
@@ -98,9 +119,16 @@ export default defineComponent({
     },
     sign() {
       axios
-        .post("/yunbei/sign", { cookie: localStorage.getItem("cookie") || "" })
+        .post(`/yunbei/sign?timeStamps=${Date.now()}`, {
+          cookie: localStorage.getItem("cookie") || "",
+          type: 1,
+        })
         .then((res) => {
-          ElMessage({ message: "签到成功" });
+          ElMessage({ message: `签到成功,云贝+${res.data.point}` });
+          this.signed = true;
+        })
+        .catch((res) => {
+          ElMessage({ message: `签到失败` });
         });
     },
     getPlaylist() {
@@ -146,5 +174,9 @@ export default defineComponent({
   // border: 1px solid lightgray;
   box-shadow: 0px 0px 2px 1px lightgray;
   border-radius: 50%;
+}
+[class^="el-collapse"] {
+  width: calc(100vw - 15px);
+  margin: 0 auto;
 }
 </style>

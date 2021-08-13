@@ -1,13 +1,14 @@
 <template>
   <div id="nav">
     <router-link to="/">Home</router-link> |
-    <router-link to="/test">Test</router-link> |
+    <router-link to="/fm">PersonalFM</router-link> |
     <router-link to="/search">Search</router-link> |
     <router-link to="/setting">Setting</router-link> |
     <router-link to="/user">User</router-link>
   </div>
-  <player-full-screen v-if="showPlayer" />
-  <router-view v-else :key="$route.fullPath"/>
+  <!-- <player-full-screen v-if="showPlayer" />
+  <router-view v-else :key="$route.fullPath"/> -->
+  <router-view :key="$route.fullPath"/>
   <player />
 </template>
 
@@ -32,7 +33,6 @@ export default {
   },
   methods: {
     getSetting() {
-      console.log('test');
       let setting = {};
       // loading setting
       if (localStorage.getItem('setting') == null) {
@@ -80,17 +80,39 @@ p {
   }
 }
 
+:root{
+  --primary-color : #42b983;
+  --primary-color-accent: #3da878;
+}
 #player {
   position: absolute;
   top: 0;
   left: 0;
 }
 main {
-  height: calc(100vh - 80px - 68px);
+  max-height: calc(100vh - 81px - 68px);
   overflow-y: scroll;
   overflow-x: hidden;
 }
 a {
   color: black;
+}
+
+//美化播放页滚动条样式
+::-webkit-scrollbar {
+  width: 10px;
+  height: auto;
+  background: none;
+}
+::-webkit-scrollbar-button {
+  display: none;
+}
+::-webkit-scrollbar-thumb {
+  border-radius: 6px;
+  background-color: #ddddddbb;
+  transition: 0.25s;
+}
+::-webkit-scrollbar-thumb:hover{
+  background-color: #eeeeeebb;
 }
 </style>

@@ -128,7 +128,6 @@ export default defineComponent({
     },
     addPlaylist(index: number) {
       console.log(index);
-      console.log(this.searchResult[index]);
       let artist: Array<string> = [];
       let songData = {
         id: this.searchResult[index].id,
@@ -139,6 +138,7 @@ export default defineComponent({
         songData.artist.push(this.searchResult[index].artists[i].name);
       }
       store.commit("addPlaylist", songData);
+      store.commit("changePlaylistCursor", store.state.playlistCursor + 1);
       this.playMusic(this.searchResult[index].id);
     },
   },
@@ -153,6 +153,7 @@ ul {
   li {
     display: contents;
     list-style: none;
+    padding: 0;
     div {
       display: inline-block;
       height: 32px;

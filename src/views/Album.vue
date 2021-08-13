@@ -15,48 +15,28 @@
         </p>
       </div>
     </div>
-    <div id="songs" v-if="data_loadready">
-      <ul v-if="songs.length != 0">
-        <li
-          v-for="(item, index) in songs"
-          :key="item"
-          v-bind:class="autoAddClass(index)"
-        >
-          <div class="title" v-on:click="playMusic(index)">
-            {{ item.name }}
-          </div>
-          <div class="artists">
-            <span v-for="artist in item.ar" :key="artist">
-              <router-link :to="{ path: '/artist/' + artist.id }">{{
-                artist.name
-              }}</router-link>
-            </span>
-          </div>
-          <div class="album">
-            <router-link :to="{ path: '/album/' + item.al.id }">
-              {{ item.al.name }}
-            </router-link>
-          </div>
-        </li>
-      </ul>
-    </div>
+    <datashow :songsData="songs" v-if="data_loadready" />
     <div v-else v-loading="true" element-loading-background="rgb(255,255,255)">
       loading
     </div>
   </main>
 </template>
 <script lang="ts">
-import { Vue } from 'vue-class-component';
-import { defineComponent } from 'vue';
-import { Store } from 'vuex';
-import router from '@/router/index';
-import store from '@/store';
-import axios from '../axios';
+import { Vue } from "vue-class-component";
+import { defineComponent } from "vue";
+import { Store } from "vuex";
+import router from "@/router/index";
+import store from "@/store";
+import axios from "../axios";
+import datashow from "@/components/Datashow.vue";
 
 export default defineComponent({
   setup() {},
   mounted() {
     this.getData();
+  },
+  components: {
+    datashow,
   },
   data() {
     const songs: Array<any> = [];
@@ -69,37 +49,12 @@ export default defineComponent({
   },
   methods: {
     getData() {
-      axios
-        .get(`/album?id=${this.$route.params.albumID}`)
-        .then((res) => {
-          console.log(res);
-          this.songs = res.data.songs;
-          this.album_info = res.data.album;
-          this.data_loadready = true;
-        });
-    },
-    playMusic(index: number) {
-      const newPlaylist = [];
-      for (let i = 0; i < this.songs.length; i++) {
-        const artists: Array<any> = [];
-        const song = {
-          id: this.songs[i].id,
-          name: this.songs[i].name,
-          artists,
-        };
-        for (let j = 0; j < this.songs[i].ar.length; j++) {
-          song.artists.push(j < this.songs[i].ar[j].name);
-        }
-        newPlaylist.push(song);
-      }
-      const newData = {
-        playlist: newPlaylist,
-        cursor: index,
-      };
-      store.commit('replacePlaylist', newData);
-    },
-    autoAddClass(index: number) {
-      return index % 2 == 0 ? 'bg' : '';
+      axios.get(`/album?id=${this.$route.params.albumID}`).then((res) => {
+        console.log(res);
+        this.songs = res.data.songs;
+        this.album_info = res.data.album;
+        this.data_loadready = true;
+      });
     },
   },
 });
@@ -161,42 +116,6 @@ export default defineComponent({
     height: 200px;
     margin-left: 50%;
     transform: translateX(-50%);
-  }
-}
-#songs {
-  ul {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr;
-    // margin-bottom: 80px;
-    padding: 0px;
-    li {
-      display: contents;
-      list-style: none;
-      text-align: left;
-      div {
-        display: inline-block;
-        height: 32px;
-        //   border-bottom: 1px solid lightgray;
-        line-height: 32px;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: nowrap;
-      }
-      .title {
-        padding-left: 20px;
-      }
-      .artists > span:not(:last-of-type)::after {
-        content: "/";
-        margin: 0 2px;
-      }
-      a {
-        color: #2c3e50;
-        text-decoration: none;
-      }
-    }
-    li.bg > div {
-      background-color: #f8f8f8;
-    }
   }
 }
 </style>

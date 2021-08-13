@@ -49,9 +49,7 @@ export default defineComponent({
         axios
           .get(`/search/suggest?keywords=${keyword}&type=mobile`)
           .then((res) => {
-            console.log(res);
             const data = res.data.result.allMatch;
-            console.log(data);
             this.suggestcontent = data;
             return data;
           });

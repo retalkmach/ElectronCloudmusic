@@ -41,61 +41,62 @@
   </el-tabs>
 </template>
 <script lang="ts">
-import { Vue } from 'vue-class-component';
-import { defineComponent } from 'vue';
-import axios from '../axios';
+import { Vue } from "vue-class-component";
+import { defineComponent } from "vue";
+import axios from "../axios";
 
 export default defineComponent({
   setup() {},
   data() {
     return {
-      phone: '',
-      email: '',
-      password: '',
-      activePane: 'phone',
+      phone: "",
+      email: "",
+      password: "",
+      activePane: "phone",
       whitePic:
-        'data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==',
-      qrcode: '',
-      qrcode_status: '正在加载二维码',
+        "data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==",
+      qrcode: "",
+      qrcode_status: "正在加载二维码",
       timer: 0,
     };
   },
   methods: {
     loginByPhone() {
       axios
-        .post('/login/cellphone', {
+        .post("/login/cellphone", {
           phone: this.phone,
           password: this.password,
         })
         .then((res) => {
           console.log(res);
           if (res.data.account) {
-            localStorage.setItem('cookie', res.data.cookie);
+            localStorage.setItem("cookie", res.data.cookie);
+            this.$emit("logged");
           }
         });
     },
     loginByEmail() {
       axios
-        .post('/login', {
+        .post("/login", {
           email: this.email,
           pasword: this.password,
         })
         .then((res) => {
           console.log(res);
           if (res.data.account) {
-            localStorage.setItem('cookie', res.data.cookie);
+            localStorage.setItem("cookie", res.data.cookie);
           }
         });
     },
     async loginByQRCode() {
-      console.log('正在进行二维码登录');
+      console.log("正在进行二维码登录");
       const key: string = await axios
         .get(`/login/qr/key?timerstamp=${Date.now()}`)
         .then((res) => res.data.data.unikey);
       this.qrcode = await axios
         .get(`/login/qr/create?key=${key}&qrimg=true&timerstamp=${Date.now()}`)
         .then((res) => res.data.data.qrimg);
-      this.qrcode_status = '等待扫码';
+      this.qrcode_status = "等待扫码";
       this.timer = window.setInterval(() => {
         axios
           .get(`/login/qr/check?key=${key}&timerstamp=${Date.now()}`)
@@ -103,19 +104,20 @@ export default defineComponent({
             console.log(res.data);
             this.qrcode_status = res.data.message;
             if (res.data.code == 800) {
-              this.qrcode = '';
+              this.qrcode = "";
               clearInterval(this.timer);
             }
             if (res.data.code == 803) {
-              localStorage.setItem('cookie', res.data.cookie);
+              localStorage.setItem("cookie", res.data.cookie);
               clearInterval(this.timer);
+              this.$emit("logged");
             }
           });
       }, 2000);
     },
     handleClick(tab: any, event: any) {
       console.log(tab, event);
-      if (tab.props.label == '二维码登录') {
+      if (tab.props.label == "二维码登录") {
         this.loginByQRCode();
       }
     },
