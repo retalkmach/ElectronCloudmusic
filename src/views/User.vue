@@ -179,4 +179,11 @@ export default defineComponent({
   width: calc(100vw - 15px);
   margin: 0 auto;
 }
+//暗色模式下覆盖element ui 默认样式
+.el-collapse {
+  --el-collapse-border-color:var(--border-color);
+  --el-collapse-header-background-color: var(--background-color);
+  --el-collapse-header-font-color: var(--text-color);
+  --el-collapse-content-background-color: var(--background-color);
+}
 </style>

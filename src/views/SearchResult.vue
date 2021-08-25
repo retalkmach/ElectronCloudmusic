@@ -177,11 +177,11 @@ ul {
   }
 }
 .bg > div {
-  background-color: #f8f8f8;
+  background-color: var(--background-accent-color);
 }
 a {
   // color: gray;
-  color: #2c3e50;
+  color: var(--text-secondly-color);
   text-decoration: none;
 }
 </style>

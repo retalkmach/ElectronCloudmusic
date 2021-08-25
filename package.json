@@ -1,6 +1,6 @@
 {
     "name": "electroncloudmusic",
-    "version": "0.14.0",
+    "version": "0.14.1",
     "private": true,
     "scripts": {
         "serve": "vue-cli-service serve",
@@ -14,10 +14,10 @@
     "main": "background.js",
     "dependencies": {
         "axios": "^0.21.1",
-        "core-js": "^3.15.2",
-        "element-plus": "^1.0.2-beta.54",
-        "material-icons": "^1.1.1",
-        "vue": "^3.1.4",
+        "core-js": "^3.16.2",
+        "element-plus": "^1.0.2-beta.71",
+        "material-icons": "^1.2.0",
+        "vue": "^3.2.4",
         "vue-router": "^4.0.0-0",
         "vuex": "^4.0.0-0"
     },
@@ -28,15 +28,15 @@
         "@vue/cli-plugin-typescript": "~4.5.13",
         "@vue/cli-plugin-vuex": "~4.5.13",
         "@vue/cli-service": "^4.5.13",
-        "@vue/compiler-sfc": "^3.1.4",
-        "electron": "^13.1.5",
+        "@vue/compiler-sfc": "^3.2.4",
+        "electron": "^13.2.1",
         "electron-devtools-installer": "^3.2.0",
         "jsonfile": "^6.1.0",
-        "sass": "^1.35.1",
-        "sass-loader": "^8.0.2",
+        "sass": "^1.38.0",
+        "sass-loader": "8.0.2",
         "typescript": "~4.3.5",
         "vite": "^2.3.3",
-        "vite-plugin-style-import": "^1.0.1",
+        "vite-plugin-style-import": "^1.1.1",
         "vue-class-component": "^8.0.0-0",
         "vue-cli-plugin-electron-builder": "^2.1.1",
         "vue-cli-plugin-vite": "~1.1.4"

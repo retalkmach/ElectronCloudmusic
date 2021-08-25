@@ -89,14 +89,14 @@ export default defineComponent({
   box-sizing: border-box;
   margin: 0 5px;
   padding: 2px 5px;
-  border: 1px solid lightgray;
+  border: 1px solid var(--border-color);
   font-size: 20px;
 }
 #search-button {
   width: 30px;
   height: 30px;
   padding: 0;
-  border: 1px solid lightgray;
+  border: 1px solid var(--border-color);
   background-color: transparent;
   .icon {
     width: 30px;
