@@ -1,0 +1,4 @@
+.el-divider__text {
+    background-color: var(--background-color);
+    color: var(--text-color);
+}

@@ -139,12 +139,12 @@ export default defineComponent({
         margin: 0 2px;
       }
       a {
-        color: #2c3e50;
+        color: var(--text-secondly-color);
         text-decoration: none;
       }
     }
     li.bg > div {
-      background-color: #f8f8f8;
+      background-color: var(--background-accent-color);
     }
   }
 }
@@ -152,13 +152,14 @@ export default defineComponent({
   position: absolute;
   width: 180px;
   border-radius: 4px;
-  background-color: white;
+  background-color: var(--background-high-elevation-color);
   // box-shadow: 0px 0px 2px 1px lightgray;
-  border: 1px solid lightgray;
+  border: 1px solid var(--shadow-color);
   ul {
     margin: 2px 0;
     padding-left: 5px;
     list-style: none;
+    color: var(--text-color);
     li {
       height: 28px;
       line-height: 28px;

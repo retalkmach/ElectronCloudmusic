@@ -117,6 +117,9 @@
         </li>
       </ul>
     </section>
+    <section id="info">
+      <span > 当前版本：{{ version }}</span>
+    </section>
     <!-- <button @click="saveSetting">保存</button> -->
     <section>
       <el-button round type="danger" @click="initSetting">重置设置</el-button>
@@ -127,6 +130,7 @@
 import { defineComponent } from "vue";
 import store from "@/store";
 import setting_option from "@/assets/data/setting_options.json";
+import projectConfig from "../../package.json";
 
 export default defineComponent({
   setup() {},
@@ -137,6 +141,7 @@ export default defineComponent({
     return {
       setting: Object as any,
       settingOption: setting_option,
+      version: projectConfig.version,
     };
   },
   methods: {
@@ -198,6 +203,21 @@ ul {
   .menu-item-controller {
     position: absolute;
     right: 10px;
+  }
+}
+#info{
+  span{
+    display: inline-block;
+    width: 320px;
+    height: 26px;
+    margin: 4px;
+    border-radius: 12px;
+    line-height: 26px;
+    cursor: default;
+    transition: 0.5s linear;
+  }
+  span:hover{
+    backdrop-filter: brightness(0.75);
   }
 }
 </style>

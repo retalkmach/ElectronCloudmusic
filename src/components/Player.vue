@@ -57,7 +57,12 @@
       ></el-slider>
     </div>
     <div id="controller">
-      <span id="like" class="material-icons" :data-like="like" @click="likeMusic">
+      <span
+        id="like"
+        class="material-icons"
+        :data-like="like"
+        @click="likeMusic"
+      >
         favorite
       </span>
       <!-- <span class="material-icons">favorite</span> -->
@@ -111,14 +116,12 @@ export default defineComponent({
     playlist() {
       return this.$store.state.playlist;
     },
-    setting() {
+    setting(): any {
       return store.state.setting;
     },
-    like() {
-      let isLike = this.likeList.some(
-        (musicid: number) => this.musicID == musicid
-      );
-      return isLike;
+    like(): boolean {
+      return this.likeList.some((musicid: number) => this.musicID == musicid);
+      // return isLike;
     },
   },
   data() {
@@ -208,6 +211,32 @@ export default defineComponent({
               },
             ],
           });
+          //适配chromium的媒体控制
+          //@ts-ignore
+          navigator.mediaSession.setActionHandler("play", this.play());
+          //@ts-ignore
+          navigator.mediaSession.setActionHandler("pause", this.pause());
+          //@ts-ignore
+          navigator.mediaSession.setActionHandler(
+            "nexttrack",
+            this.playNextMusic()
+          );
+          //@ts-ignore
+          navigator.mediaSession.setActionHandler(
+            "previoustrack",
+            this.playPrevMusic()
+          );
+
+          //@ts-ignore
+          navigator.mediaSession.setActionHandler(
+            "seekbackward",
+            function () {}
+          );
+          //@ts-ignore
+          navigator.mediaSession.setActionHandler(
+            "seekforward",
+            function () {}
+          );
         }
       });
     },
@@ -219,9 +248,17 @@ export default defineComponent({
     },
     play() {
       this.DOMArray[3].play();
+      // if ("mediaSession" in navigator){
+      //   //@ts-ignore
+      //     navigator.mediaSession.playbackState = "playing"
+      // }
     },
     pause() {
       this.DOMArray[3].pause();
+      // if ("mediaSession" in navigator){
+      //   //@ts-ignore
+      //     navigator.mediaSession.playbackState = "paused"
+      // }
     },
     playNextMusic() {
       this.$store.state.playlistCursor + 1 == this.$store.state.playlist.length
@@ -296,21 +333,6 @@ export default defineComponent({
         }
         this.playNextMusic();
       });
-      //适配chromium的媒体控制
-      //@ts-ignore
-      navigator.mediaSession.setActionHandler("play", this.play());
-      //@ts-ignore
-      navigator.mediaSession.setActionHandler("pause", this.pause());
-      //@ts-ignore
-      navigator.mediaSession.setActionHandler(
-        "nexttrack",
-        this.playNextMusic()
-      );
-      //@ts-ignore
-      navigator.mediaSession.setActionHandler(
-        "previoustrack",
-        this.playPrevMusic()
-      );
     },
     toggleDisplay() {
       console.log(this.$route);
@@ -339,25 +361,27 @@ export default defineComponent({
           this.likeList = res.data.ids;
         });
     },
-    likeMusic(){
+    likeMusic() {
       axios
         .post(`/like?timeStamps=${Date.now()}`, {
           cookie: localStorage.getItem("cookie") || "",
           id: this.musicID,
-          like: this.like?"false":"true"
+          like: this.like ? "false" : "true",
         })
         .then((res) => {
           console.log(res);
           this.getLikeList();
         });
-    }
+    },
   },
 });
 </script>
 
 <style lang="scss" scoped>
 //import google material-design-icon
-@import "material-icons/iconfont/material-icons.css";
+// @import "material-icons/iconfont/material-icons.css";
+//when build to production by webpack, will had error, so change location
+@import "../../node_modules/material-icons/iconfont/material-icons.css";
 
 $primary-color: #42b983;
 $primary-color-hover: #49cc91;
@@ -368,9 +392,9 @@ $primary-color-click: #3da878;
   bottom: 0;
   height: 80px;
   width: 100%;
-  background-color: white;
+  background-color: var(--background-color);
   // backdrop-filter: blur(35px);
-  border-top: 1px solid lightgray;
+  border-top: 1px solid var(--border-color);
 }
 #album-pic {
   position: absolute;
@@ -378,6 +402,10 @@ $primary-color-click: #3da878;
   height: 100%;
   aspect-ratio: 1/1;
   cursor: pointer;
+  transition: 0.25s linear;
+}
+#album-pic:hover {
+  filter: brightness(75%);
 }
 #change-playstatus-buttons {
   display: flex;
@@ -457,7 +485,7 @@ $primary-color-click: #3da878;
         white-space: nowrap;
       }
       #artist-name {
-        color: gray;
+        color: var(--text-secondly-color);
         span:not(:last-of-type)::after {
           content: "/";
           margin: 0 2px;
@@ -519,15 +547,15 @@ $primary-color-click: #3da878;
   width: 320px;
   max-height: 70vh;
   box-sizing: border-box;
-  box-shadow: 1px 1px 2px 1px lightgray;
-  border-radius: 4px;
-  background-color: white;
+  box-shadow: 1px 1px 2px 1px var(--shadowp-color);
+  border-radius: 4px 4px 0 0;
+  background-color: var(--background-high-elevation-color);
   #header {
     top: 0;
     height: 32px;
     width: 320px;
     border-bottom: 1px solid lightgray;
-    background-color: white;
+    background-color: var(--background-high-elevation-color);
     border-radius: 4px;
     text-align: center;
     user-select: none;

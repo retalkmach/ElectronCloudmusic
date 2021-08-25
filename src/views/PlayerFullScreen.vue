@@ -356,7 +356,7 @@ export default defineComponent({
   width: 45vh;
   height: 45vh;
   margin: 20px;
-  box-shadow: 1px 1px 5px 1px lightgray;
+  box-shadow: 1px 1px 5px 1px var(--shadow-color);
   img {
     width: 45vh;
     height: 45vh;

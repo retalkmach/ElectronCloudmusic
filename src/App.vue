@@ -8,17 +8,17 @@
   </div>
   <!-- <player-full-screen v-if="showPlayer" />
   <router-view v-else :key="$route.fullPath"/> -->
-  <router-view :key="$route.fullPath"/>
+  <router-view :key="$route.fullPath" />
   <player />
 </template>
 
 <script>
-import player from '@/components/Player.vue';
-import store from '@/store';
-import PlayerFullScreen from './views/PlayerFullScreen.vue';
+import player from "@/components/Player.vue";
+import store from "@/store";
+import PlayerFullScreen from "./views/PlayerFullScreen.vue";
 
 export default {
-  name: 'app',
+  name: "app",
   components: {
     player,
     PlayerFullScreen,
@@ -35,23 +35,24 @@ export default {
     getSetting() {
       let setting = {};
       // loading setting
-      if (localStorage.getItem('setting') == null) {
-        console.log('empty setting, will init setting');
-        store.commit('initSetting');
+      if (localStorage.getItem("setting") == null) {
+        console.log("empty setting, will init setting");
+        store.commit("initSetting");
       } else {
-        console.log('loading setting');
-        setting = JSON.parse(localStorage.getItem('setting'));
+        console.log("loading setting");
+        setting = JSON.parse(localStorage.getItem("setting"));
         if (setting.version < this.$store.state.defaultSetting.version) {
-          store.commit('upgradeSetting');
+          store.commit("upgradeSetting");
           return;
         }
-        store.commit('changeSetting', setting);
+        store.commit("changeSetting", setting);
       }
     },
   },
 };
 </script>
 
+<style src="./assets/style/custom-element.css" />
 <style lang="scss">
 body,
 div,
@@ -64,7 +65,7 @@ p {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
+  color: var(--text-color);
 }
 
 #nav {
@@ -72,7 +73,7 @@ p {
 
   a {
     font-weight: bold;
-    color: #2c3e50;
+    color: var(--text-color);
 
     &.router-link-exact-active {
       color: #42b983;
@@ -80,8 +81,12 @@ p {
   }
 }
 
-:root{
-  --primary-color : #42b983;
+body {
+  background-color: var(--background-color);
+}
+
+:root {
+  --primary-color: #42b983;
   --primary-color-accent: #3da878;
 }
 #player {
@@ -95,7 +100,28 @@ main {
   overflow-x: hidden;
 }
 a {
-  color: black;
+  color: var(--text-color);
+}
+//夜间模式
+:root {
+  --background-color: white;
+  --background-accent-color: #f8f8f8;
+  --background-high-elevation-color: white;
+  --text-color: #2c3e50;
+  --text-secondly-color: #737980;
+  --border-color: lightgray;
+  --shadow-color: lightgray;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background-color: #39403d;
+    --background-accent-color: #2d3331;
+    --background-high-elevation-color: #555957;
+    --text-color: lightgray;
+    --text-secondly-color: gray;
+    --border-color: black;
+    --shadow-color: transparents;
+  }
 }
 
 //美化播放页滚动条样式
@@ -112,7 +138,7 @@ a {
   background-color: #ddddddbb;
   transition: 0.25s;
 }
-::-webkit-scrollbar-thumb:hover{
+::-webkit-scrollbar-thumb:hover {
   background-color: #eeeeeebb;
 }
 </style>
