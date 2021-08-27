@@ -217,15 +217,9 @@ export default defineComponent({
           //@ts-ignore
           navigator.mediaSession.setActionHandler("pause", this.pause());
           //@ts-ignore
-          navigator.mediaSession.setActionHandler(
-            "nexttrack",
-            this.playNextMusic()
-          );
+          navigator.mediaSession.setActionHandler("nexttrack", () => {});
           //@ts-ignore
-          navigator.mediaSession.setActionHandler(
-            "previoustrack",
-            this.playPrevMusic()
-          );
+          navigator.mediaSession.setActionHandler("previoustrack", () => {});
 
           //@ts-ignore
           navigator.mediaSession.setActionHandler(
@@ -261,13 +255,18 @@ export default defineComponent({
       // }
     },
     playNextMusic() {
-      this.$store.state.playlistCursor + 1 == this.$store.state.playlist.length
+      console.log(
+        this.$store.state.playlistCursor +
+          " " +
+          this.$store.state.playlist.length
+      );
+      this.$store.state.playlistCursor == this.$store.state.playlist.length
         ? this.changeMusic(0)
         : this.changeMusic(this.$store.state.playlistCursor + 1);
     },
     playPrevMusic() {
       this.$store.state.playlistCursor == 0
-        ? this.changeMusic(this.$store.state.playlist.length)
+        ? this.changeMusic(this.$store.state.playlist.length - 1)
         : this.changeMusic(this.$store.state.playlistCursor - 1);
     },
     removeMusic(index: number) {
