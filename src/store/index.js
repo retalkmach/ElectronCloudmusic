@@ -3,10 +3,10 @@ export default createStore({
     state: {
         musicID: 488388943,
         playlist: [{
-                id: 488388943,
-                name: '光',
-                artist: ['當山みれい'],
-            }],
+            id: 488388943,
+            name: '光',
+            artist: ['當山みれい'],
+        }],
         playlistCursor: 0,
         currentTime: 0,
         playerMode: 'normal',
@@ -42,8 +42,11 @@ export default createStore({
             state.playlist.splice(state.playlistCursor + 1, 0, songData);
         },
         changePlaylistCursor(state, cursor) {
-            if (cursor >= state.playlist.length)
+            console.log("cursor is " + cursor);
+            if (cursor >= state.playlist.length) {
+                console.log("cursor is faild");
                 return false;
+            }
             state.playlistCursor = cursor;
             state.musicID = state.playlist[cursor].id;
         },
@@ -56,8 +59,7 @@ export default createStore({
             //当删除的是当前播放的歌曲，下面的会补上来，无需考虑下标的变化，需要切歌
             if (cursor == state.playlistCursor) {
                 state.musicID = state.playlist[state.playlistCursor].id;
-            }
-            else {
+            } else {
                 //当删除的歌曲不是当前正在播放的，只需改变下标
                 //如果删除的歌曲在当前播放歌曲的前面，由于前面的少了一个，下面的会补上去，游标减1
                 if (cursor < state.playlistCursor) {
@@ -71,8 +73,7 @@ export default createStore({
             let type = ['normal', 'fm'];
             if (type.some((type) => { return type === mode; })) {
                 state.playerMode = mode;
-            }
-            else {
+            } else {
                 state.playerMode = "normal";
             }
         },
@@ -85,7 +86,7 @@ export default createStore({
         },
         upgradeSetting(state) {
             const olderSetting = JSON.parse(localStorage.getItem('setting') || '');
-            const mergedSetting = { ...state.defaultSetting, ...olderSetting };
+            const mergedSetting = {...state.defaultSetting, ...olderSetting };
             mergedSetting.version = state.defaultSetting.version;
             state.setting = mergedSetting;
             localStorage.setItem('setting', JSON.stringify(mergedSetting));
