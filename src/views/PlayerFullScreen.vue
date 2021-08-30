@@ -60,7 +60,6 @@ export default defineComponent({
     this.layoutData.lyricHeight = lyric.offsetWidth;
     this.layoutData.windowWidth = document.body.offsetWidth;
     let gutter = (this.layoutData.windowWidth - 128 * 5) / 128 / 2;
-    console.log(gutter);
     let lis: any = document.querySelectorAll("#frequency li");
     for (let i = 0; i < lis.length; i++) {
       lis[i].style.margin = `0px ${gutter}px`;
@@ -97,6 +96,7 @@ export default defineComponent({
       lyric: lyric,
       rowlyric: Object as any,
       translatedLyric: [Object as any],
+      currentLyricIndex: 0,
       canScrollLyric: true,
       preventScrollTimeout: 0,
       audioDataArr: audioDataArr,
@@ -220,20 +220,25 @@ export default defineComponent({
     },
     updateLyric() {
       let time = this.currentTime;
+      let lyricIndex = 0;
       for (let i = 0; i < this.lyric.length; i++) {
         if (i == this.lyric.length - 1) {
           //部分歌曲最后一句歌词内容空白且时间为NaN,导致显示最后一句歌词时显示异常
           if (isNaN(this.lyric[i].time)) {
-            this.switchLyric(i - 1);
+            lyricIndex = i - 1;
           } else {
-            this.switchLyric(i);
+            lyricIndex = i;
           }
           break;
         }
         if (this.lyric[i].time <= time && this.lyric[i + 1].time >= time) {
-          this.switchLyric(i);
+          lyricIndex = i;
           break;
         }
+      }
+      if (lyricIndex != this.currentLyricIndex) {
+        this.currentLyricIndex = lyricIndex;
+        this.switchLyric(this.currentLyricIndex);
       }
     },
     switchLyric(i: number) {
