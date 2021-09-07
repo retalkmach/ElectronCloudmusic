@@ -1,21 +1,12 @@
 <template>
   <div id="container" :data-fmmode="$store.state.playerMode == 'fm'">
-    <audio src="" crossorigin="anonymous"></audio>
-    <img
-      src="@/assets/images/unknowAlbum.png"
-      alt=""
-      id="album-pic"
-      @click="toggleDisplay"
-    />
+    <audio src crossorigin="anonymous"></audio>
+    <img src="@/assets/images/unknowAlbum.png" alt id="album-pic" @click="toggleDisplay" />
     <div id="change-playstatus-buttons">
       <button id="prev" @click="playPrevMusic">
         <div class="icon"></div>
       </button>
-      <button
-        id="toggle-play-status"
-        class="play"
-        @click="DOMArray[3].paused ? play() : pause()"
-      >
+      <button id="toggle-play-status" class="play" @click="DOMArray[3].paused ? play() : pause()">
         <div class="left"></div>
         <div class="right"></div>
       </button>
@@ -25,18 +16,20 @@
     </div>
     <div id="player-info">
       <p id="music-info">
-        <span class="left"
-          ><span id="music-name"></span> -
-          <span id="artist-name"
-            ><span v-for="artist in artists" :key="artist">{{ artist }} </span>
-          </span></span
-        ><span class="right"
-          ><span id="played-duration"></span> / <span id="music-duration"></span
-        ></span>
+        <span class="left">
+          <span id="music-name"></span> -
+          <span id="artist-name">
+            <span v-for="artist in artists" :key="artist">{{ artist }}</span>
+          </span>
+        </span>
+        <span class="right">
+          <span id="played-duration"></span> /
+          <span id="music-duration"></span>
+        </span>
       </p>
       <input
         type="range"
-        name=""
+        name
         v-model="currentTime"
         id="progress-bar"
         min="0"
@@ -57,18 +50,9 @@
       ></el-slider>
     </div>
     <div id="controller">
-      <span
-        id="like"
-        class="material-icons"
-        :data-like="like"
-        @click="likeMusic"
-      >
-        favorite
-      </span>
+      <span id="like" class="material-icons" :data-like="isLike" @click="likeMusic">favorite</span>
       <!-- <span class="material-icons">favorite</span> -->
-      <span id="list" @click="toggleShowPlaylist" class="material-icons">
-        menu
-      </span>
+      <span id="list" @click="toggleShowPlaylist" class="material-icons">menu</span>
     </div>
     <transition name="playlist">
       <div id="playlist" v-if="showPlaylist">
@@ -83,9 +67,9 @@
             :class="music.id == $store.state.musicID ? 'current' : ''"
           >
             {{ music.name }}
-            <span class="close" @click="removeMusic(index)"
-              ><i class="el-icon-close"></i
-            ></span>
+            <span class="close" @click="removeMusic(index)">
+              <i class="el-icon-close"></i>
+            </span>
           </li>
         </div>
       </div>
@@ -98,12 +82,13 @@ import { defineComponent } from "vue";
 import { Store } from "vuex";
 import store from "@/store";
 import axios from "../axios";
+import { addData } from "@/utils/performance.js"
 
 export default defineComponent({
   setup() {
     // this.updatePlayedInfo();
   },
-  created() {},
+  created() { },
   mounted() {
     this.init();
     this.updateMusicInfo();
@@ -119,9 +104,26 @@ export default defineComponent({
     setting(): any {
       return store.state.setting;
     },
-    like(): boolean {
-      return this.likeList.some((musicid: number) => this.musicID == musicid);
-      // return isLike;
+    isLike(): boolean {
+      let result: boolean = false;
+      let index: number;
+      let arrNum = this.likeList.length;
+      let startTime = window.performance.now();
+      for (let i = 0; i < arrNum; i++) {
+        if (this.musicID == this.likeList[i]) {
+          result = true;
+          if (this.setting.developer?.performanceMonitor) {
+            let data = {
+              usedTime: window.performance.now() - startTime,
+              index: i,
+              listLength: arrNum
+            }
+            addData("checkLikeMusic",data);
+          }
+        }
+      }
+      // result = this.likeList.some((musicid: number) => this.musicID == musicid)
+      return result;
     },
   },
   data() {
@@ -164,8 +166,7 @@ export default defineComponent({
       // update player music address
       axios
         .post(
-          `song/url?id=${id}&br=${
-            this.$store.state.setting.playBitrate || 999000
+          `song/url?id=${id}&br=${this.$store.state.setting.playBitrate || 999000
           }`,
           {
             cookie: localStorage.getItem("cookie") || "",
@@ -217,19 +218,19 @@ export default defineComponent({
           //@ts-ignore
           navigator.mediaSession.setActionHandler("pause", this.pause());
           //@ts-ignore
-          navigator.mediaSession.setActionHandler("nexttrack", () => {});
+          navigator.mediaSession.setActionHandler("nexttrack", () => { });
           //@ts-ignore
-          navigator.mediaSession.setActionHandler("previoustrack", () => {});
+          navigator.mediaSession.setActionHandler("previoustrack", () => { });
 
           //@ts-ignore
           navigator.mediaSession.setActionHandler(
             "seekbackward",
-            function () {}
+            function () { }
           );
           //@ts-ignore
           navigator.mediaSession.setActionHandler(
             "seekforward",
-            function () {}
+            function () { }
           );
         }
       });
@@ -255,12 +256,7 @@ export default defineComponent({
       // }
     },
     playNextMusic() {
-      console.log(
-        this.$store.state.playlistCursor +
-          " " +
-          this.$store.state.playlist.length
-      );
-      this.$store.state.playlistCursor == this.$store.state.playlist.length
+      this.$store.state.playlistCursor + 1 == this.$store.state.playlist.length
         ? this.changeMusic(0)
         : this.changeMusic(this.$store.state.playlistCursor + 1);
     },
@@ -346,9 +342,6 @@ export default defineComponent({
         Math.floor(time % 60)
       )}`;
     },
-    musicFrequency() {
-      const audioCtx = new AudioContext();
-    },
     getLikeList() {
       axios
         .post(`/likelist?timeStamps=${Date.now()}`, {
@@ -365,7 +358,7 @@ export default defineComponent({
         .post(`/like?timeStamps=${Date.now()}`, {
           cookie: localStorage.getItem("cookie") || "",
           id: this.musicID,
-          like: this.like ? "false" : "true",
+          like: this.isLike ? "false" : "true",
         })
         .then((res) => {
           console.log(res);
@@ -377,11 +370,6 @@ export default defineComponent({
 </script>
 
 <style lang="scss" scoped>
-//import google material-design-icon
-// @import "material-icons/iconfont/material-icons.css";
-//when build to production by webpack, will had error, so change location
-@import "../../node_modules/material-icons/iconfont/material-icons.css";
-
 $primary-color: #42b983;
 $primary-color-hover: #49cc91;
 $primary-color-click: #3da878;
@@ -546,7 +534,7 @@ $primary-color-click: #3da878;
   width: 320px;
   max-height: 70vh;
   box-sizing: border-box;
-  box-shadow: 1px 1px 2px 1px var(--shadowp-color);
+  box-shadow: 1px 1px 2px 1px var(--shadow-color);
   border-radius: 4px 4px 0 0;
   background-color: var(--background-high-elevation-color);
   #header {
@@ -681,6 +669,7 @@ $primary-color-click: #3da878;
     transform: rotate(360deg);
   }
 }
+
 input[type="range"] {
   height: 24px;
   width: 100%;

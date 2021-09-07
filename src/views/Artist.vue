@@ -9,7 +9,7 @@
         <p id="description">{{ artist_info.artist.briefDesc }}</p>
       </div>
     </div>
-    <datashow :songsData="songs" v-if="songsdata_loadready" />
+    <musicshow :datas="songs" v-if="songsdata_loadready" />
   </main>
 </template>
 <script lang="ts">
@@ -19,12 +19,12 @@ import { Store } from "vuex";
 import router from "@/router/index";
 import store from "@/store";
 import axios from "../axios";
-import datashow from "@/components/Datashow.vue";
+import musicshow from "@/components/Musicshow.vue";
 
 export default defineComponent({
   setup() {},
   components: {
-    datashow,
+    musicshow,
   },
   mounted() {
     this.getArtistInfo();

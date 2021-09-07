@@ -5,15 +5,12 @@
         <li class="menu-item">
           <span>播放器全屏页面使用专辑图片作为背景</span>
           <div class="menu-item-controller">
-            <el-switch
-              v-model="setting.usePicAsPlayerBackground"
-              inactive-color="#bbbbbb"
-            ></el-switch>
+            <el-switch v-model="setting.usePicAsPlayerBackground" inactive-color="#bbbbbb"></el-switch>
           </div>
         </li>
         <li class="menu-item">
-          <span
-            >播放页面显示频谱
+          <span>
+            播放页面显示频谱
             <el-popover
               placement="top-start"
               title="警告"
@@ -23,20 +20,17 @@
               :auto-close="8000"
             >
               <template #reference>
-                <i class="el-icon-warning-outline"></i
-              ></template>
+                <i class="el-icon-warning-outline"></i>
+              </template>
             </el-popover>
           </span>
           <div class="menu-item-controller">
-            <el-switch
-              v-model="setting.showFrequency"
-              inactive-color="#bbbbbb"
-            ></el-switch>
+            <el-switch v-model="setting.showFrequency" inactive-color="#bbbbbb"></el-switch>
           </div>
         </li>
         <li class="menu-item">
-          <span
-            >更新听歌记录
+          <span>
+            更新听歌记录
             <el-popover
               placement="top-start"
               title="提示"
@@ -46,33 +40,24 @@
               :auto-close="8000"
             >
               <template #reference>
-                <i class="el-icon-warning-outline"></i
-              ></template>
+                <i class="el-icon-warning-outline"></i>
+              </template>
             </el-popover>
           </span>
           <div class="menu-item-controller">
-            <el-switch
-              v-model="setting.feedback"
-              inactive-color="#bbbbbb"
-            ></el-switch>
+            <el-switch v-model="setting.feedback" inactive-color="#bbbbbb"></el-switch>
           </div>
         </li>
         <li class="menu-item">
           <span>显示翻译后的歌词</span>
           <div class="menu-item-controller">
-            <el-switch
-              v-model="setting.showTranslatedLyric"
-              inactive-color="#bbbbbb"
-            ></el-switch>
+            <el-switch v-model="setting.showTranslatedLyric" inactive-color="#bbbbbb"></el-switch>
           </div>
         </li>
         <li class="menu-item">
           <span>自动签到</span>
           <div class="menu-item-controller">
-            <el-switch
-              v-model="setting.autoSign"
-              inactive-color="#bbbbbb"
-            ></el-switch>
+            <el-switch v-model="setting.autoSign" inactive-color="#bbbbbb"></el-switch>
           </div>
         </li>
         <li class="menu-item">
@@ -103,22 +88,45 @@
         </li>
       </ul>
     </section>
+    <section v-if="setting.appearance">
+      <ul>
+        <el-divider content-position="left">外观</el-divider>
+        <li class="menu-item">
+          <span>跟随系统切换暗色模式</span>
+          <div class="menu-item-controller">
+            <el-switch v-model="setting.appearance.autoToogleDarkMode" inactive-color="#bbbbbb"></el-switch>
+          </div>
+        </li>
+      </ul>
+    </section>
     <section v-if="setting.advanced">
       <ul>
         <el-divider content-position="left">高级设置</el-divider>
         <li class="menu-item">
           <span>原生进度条样式</span>
           <div class="menu-item-controller">
-            <el-switch
-              v-model="setting.advanced.useNativeRange"
-              inactive-color="#bbbbbb"
-            ></el-switch>
+            <el-switch v-model="setting.advanced.useNativeRange" inactive-color="#bbbbbb"></el-switch>
           </div>
         </li>
       </ul>
     </section>
+    <section v-if="setting.developer">
+      <ul>
+        <el-divider content-position="left">开发者选项</el-divider>
+        <li class="menu-item">
+          <span>性能监测</span>
+          <div class="menu-item-controller">
+            <el-switch v-model="setting.developer.performanceMonitor" inactive-color="#bbbbbb"></el-switch>
+          </div>
+        </li>
+        <li>
+          <el-button type="info" round @click="backupSetting">备份设置</el-button>
+          <el-button type="warning" round @click="restoreSetting">还原设置</el-button>
+        </li>
+      </ul>
+    </section>
     <section id="info">
-      <span > 当前版本：{{ version }}</span>
+      <span>当前版本：{{ version }}</span>
     </section>
     <!-- <button @click="saveSetting">保存</button> -->
     <section>
@@ -133,7 +141,7 @@ import setting_option from "@/assets/data/setting_options.json";
 import projectConfig from "../../package.json";
 
 export default defineComponent({
-  setup() {},
+  setup() { },
   mounted() {
     this.getSetting();
   },
@@ -173,6 +181,17 @@ export default defineComponent({
       // this.setting = store.state.defaultSetting;
       // this.saveSetting(store.state.defaultSetting);
     },
+    backupSetting() {
+      localStorage.setItem("backupSetting", JSON.stringify(this.setting));
+    },
+    restoreSetting() {
+      if (localStorage.getItem("backupSetting") != null) {
+        this.setting = JSON.parse(localStorage.getItem("backupSetting")!);
+        if (this.setting.version < store.state.defaultSetting.version) {
+          store.commit("upgradeSetting");
+        }
+      }
+    }
   },
   watch: {
     setting: {
@@ -190,11 +209,13 @@ export default defineComponent({
 ul {
   margin: 0;
   padding: 0 15px;
+  li {
+    list-style: none;
+  }
 }
 .menu-item {
   position: relative;
   height: 32px;
-  list-style: none;
   line-height: 32px;
   span {
     position: absolute;
@@ -205,8 +226,8 @@ ul {
     right: 10px;
   }
 }
-#info{
-  span{
+#info {
+  span {
     display: inline-block;
     width: 320px;
     height: 26px;
@@ -216,7 +237,7 @@ ul {
     cursor: default;
     transition: 0.5s linear;
   }
-  span:hover{
+  span:hover {
     backdrop-filter: brightness(0.75);
   }
 }

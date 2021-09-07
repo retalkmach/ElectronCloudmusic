@@ -15,7 +15,7 @@
         </p>
       </div>
     </div>
-    <datashow :songsData="songs" v-if="data_loadready" />
+    <musicshow :datas="songs" v-if="data_loadready" />
     <div v-else v-loading="true" element-loading-background="rgb(255,255,255)">
       loading
     </div>
@@ -28,7 +28,7 @@ import { Store } from "vuex";
 import router from "@/router/index";
 import store from "@/store";
 import axios from "../axios";
-import datashow from "@/components/Datashow.vue";
+import musicshow from "@/components/Musicshow.vue";
 
 export default defineComponent({
   setup() {},
@@ -36,7 +36,7 @@ export default defineComponent({
     this.getData();
   },
   components: {
-    datashow,
+    musicshow,
   },
   data() {
     const songs: Array<any> = [];

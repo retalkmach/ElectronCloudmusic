@@ -13,6 +13,7 @@
     "sourceMap": true,
     "baseUrl": ".",
     "resolveJsonModule": true,
+    "allowJs": true,
     "types": [
       "webpack-env"
     ],
@@ -34,7 +35,7 @@
     "src/**/*.vue",
     "tests/**/*.ts",
     "tests/**/*.tsx"
-  ],
+, "src/utils/performance.js"  ],
   "exclude": [
     "node_modules"
   ]

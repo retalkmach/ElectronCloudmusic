@@ -1,12 +1,8 @@
 <template>
   <div id="background" v-if="setting.usePicAsPlayerBackground">
-    <img src="" alt="" />
+    <img src />
   </div>
-  <div id="frequency" v-if="setting.showFrequency">
-    <ul>
-      <li v-for="i in 128" :key="i"></li>
-    </ul>
-  </div>
+  <canvas id="frequency" :height="layoutData.lyricHeight / 0.4" :width="layoutData.windowWidth"></canvas>
   <div id="music-info">
     <div id="info">
       <p id="name">{{ musicInfo.name }}</p>
@@ -17,19 +13,20 @@
             class="artist"
             v-for="artist in musicInfo.artists"
             :key="artist.name"
-            >{{ artist.name }}</router-link
-          >
+          >{{ artist.name }}</router-link>
         </span>
         <span class="delimiter">-</span>
         <span class="album">
-          <router-link :to="'/album/' + musicInfo.album.id">{{
-            musicInfo.album.name
-          }}</router-link>
+          <router-link :to="'/album/' + musicInfo.album.id">
+            {{
+              musicInfo.album.name
+            }}
+          </router-link>
         </span>
       </p>
     </div>
     <div id="imgbox">
-      <img src="@/assets/images/unknowAlbum.png" alt="" />
+      <img src="@/assets/images/unknowAlbum.png" alt />
     </div>
     <div id="lyric">
       <ul>
@@ -37,8 +34,8 @@
           {{ item.content }}
           <span class="translated-lyric">
             <br />
-            {{ item.transContent || "" }}</span
-          >
+            {{ item.transContent || "" }}
+          </span>
         </li>
       </ul>
     </div>
@@ -59,11 +56,7 @@ export default defineComponent({
     let lyric = <HTMLElement>document.querySelector("#lyric");
     this.layoutData.lyricHeight = lyric.offsetWidth;
     this.layoutData.windowWidth = document.body.offsetWidth;
-    let gutter = (this.layoutData.windowWidth - 128 * 5) / 128 / 2;
-    let lis: any = document.querySelectorAll("#frequency li");
-    for (let i = 0; i < lis.length; i++) {
-      lis[i].style.margin = `0px ${gutter}px`;
-    }
+    this.layoutData.gutter = (this.layoutData.windowWidth - 128 * 5) / 128 / 2;
     // this.debounceSwitchLyric(false);
     //add listener to change lyric
     // document.querySelector("#container>audio")?.addEventListener("play",()=>{
@@ -90,6 +83,7 @@ export default defineComponent({
     let layoutData = {
       lyricHeight: 0,
       windowWidth: 0,
+      gutter: 0
     };
     // let musicAnalyser: AnalyserNode = new AudioContext().createAnalyser();
     return {
@@ -308,25 +302,24 @@ export default defineComponent({
         );
         this.$store.state.musicAnalyser.fftSize = 256;
       }
-      // let source = context.createMediaElementSource(audio);
-      // let source = new WeakMap().get(audio);
-      let frequency = document.querySelector("#frequency ul");
-      // this.animation = window.requestAnimationFrame(() => {
-      //   this.freshMusicFrequency();
-      //   this.animation = window.requestAnimationFrame(this.freshMusicFrequency);
-      // });
+      console.log(this.$store.state.musicAnalyser)
       this.animation = window.setInterval(() => {
         this.freshMusicFrequency();
       }, 16.6);
     },
     freshMusicFrequency() {
+      let frequency = <HTMLCanvasElement>document.querySelector("#frequency")!;
+      let ctx = frequency.getContext("2d")!;
+      ctx.fillStyle = "lightskyblue";
       this.$store.state.musicAnalyser.getByteFrequencyData(this.audioDataArr);
-      let lis: any = document.querySelectorAll("#frequency li");
-      for (let i = 0; i < lis.length; i++) {
-        lis[i].style.transform =
-          "translate3D(0," + (256 - this.audioDataArr[i] + "px,1px)");
+      let data = this.audioDataArr;
+      let height = this.layoutData.lyricHeight / 0.4;
+      ctx.clearRect(0, 0, this.layoutData.windowWidth, height);
+      let startcoo = -5;
+      for (let i = 0; i < data.length; i++) {
+        startcoo += 5 + this.layoutData.gutter
+        ctx.fillRect(startcoo, height, 5, -1 * data[i]);
       }
-      // this.animation = window.requestAnimationFrame(this.freshMusicFrequency);
     },
   },
 });
@@ -337,6 +330,12 @@ export default defineComponent({
 }
 #info {
   height: 60px;
+  p{
+    max-width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   #name {
     font-weight: 500;
     font-size: 1.5em;
@@ -351,6 +350,7 @@ export default defineComponent({
   }
   .delimiter {
     margin: 0 8px;
+    color:var(--text-delimiter-color);
   }
   a {
     text-decoration: none;
@@ -422,26 +422,5 @@ export default defineComponent({
   height: calc(100vh - 80px);
   overflow: hidden;
   z-index: -1;
-  ul {
-    position: absolute;
-    bottom: 0;
-    height: 256px;
-    overflow: hidden;
-    // display: flex;
-    padding: 0;
-    // align-items: flex-end;
-    li {
-      display: inline-block;
-      list-style: none;
-      width: 5px;
-      height: 256px;
-      margin: 0 2px;
-      border-radius: 3px 3px 0 0;
-      // transition: 0.1s linear;
-      // background-color: aquamarine;
-      background-image: linear-gradient(0deg, cornflowerblue, lightskyblue);
-      // transform: translateZ(1px);
-    }
-  }
 }
 </style>

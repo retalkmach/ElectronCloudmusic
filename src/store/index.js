@@ -16,9 +16,15 @@ export default createStore({
         initedAudioContext: false,
         musicAnalyser: AnalyserNode,
         defaultSetting: {
-            version: 7,
+            version: 9,
             advanced: {
                 useNativeRange: false,
+            },
+            appearance: {
+                autoToogleDarkMode: true,
+            },
+            developer: {
+                performanceMonitor: false,
             },
             usePicAsPlayerBackground: true,
             carouselAnimateType: 'traditional',

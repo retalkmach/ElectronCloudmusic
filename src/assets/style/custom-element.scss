@@ -1,0 +1,95 @@
+//更改 element-ui 主题色
+:root {
+    --el-color-primary: var(--primary-color) !important;
+}
+
+//全局公共样式适配夜间模式
+body[data-darkmode="true"] {
+    --el-border-color-base: var(--border-color) !important;
+    --el-border-color-light: var(--border-color-lighter);
+    --el-input-border: 1px solid var(--border-color);
+    --el-input-font-color: var(--text-color);
+}
+
+//修改滑块相关样式
+.el-slider__button {
+    transform: scale(0.8);
+}
+
+.el-slider__button:hover,
+.el-slider__button.hover {
+    -webkit-transform: scale(0.9) !important;
+    transform: scale(0.9) !important;
+}
+
+//按钮相关样式
+.el-button {
+    --el-button-background-color: var(--background-accent-color);
+}
+
+button.el-button.is-disabled {
+    --el-button-disabled-background-color: var(--background-high-elevation-color);
+    --el-button-disabled-border-color: var(--border-color-lighter);
+}
+
+//分割线相关样式
+.el-divider {
+    .el-divider__text {
+        background-color: var(--background-color);
+        color: var(--text-color);
+    }
+}
+
+//标签相关样式
+span.el-tag {
+    --el-tag-border-color: var(--border-color-lighter) !important;
+}
+
+span.el-tag.el-tag--info {
+    --el-tag-background-color: var(--background-high-elevation-color);
+}
+
+//弹出框相关样式
+div.el-popover {
+    --el-popover-background-color: var(--background-high-elevation-color);
+    --el-popover-border-color: var(--border-color-lighter);
+    --el-text-color-regular: var(--text-color);
+    .el-popover__title {
+        --el-popover-title-font-color: var(--text-title-color);
+    }
+    el-popover__arrow::before {
+        background: var(--background-high-elevation-color);
+    }
+}
+
+div.el-popper.is-light .el-popper__arrow::before {
+    background: var(--background-high-elevation-color);
+    border: 0;
+}
+
+//下拉菜单相关样式
+div.el-select {
+    .el-input {
+        .el-input__inner {
+            border-color: var(--border-color-lighter);
+            background-color: var(--background-high-elevation-color);
+            color: var(--text-color);
+        }
+    }
+}
+
+div.el-select-dropdown {
+    background-color: var(--background-high-elevation-color);
+    color: var(--text-color);
+    .el-select-dropdown__item:not(.selected) {
+        color: var(--text-color);
+    }
+    .el-select-dropdown__item:hover,
+    .hover {
+        background-color: var(--background-accent-color);
+    }
+}
+
+div.el-select__popper.el-popper[role=tooltip] {
+    background-color: var(--background-high-elevation-color);
+}

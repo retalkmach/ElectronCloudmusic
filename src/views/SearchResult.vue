@@ -1,184 +1,106 @@
 <template>
   <main>
-    <div id="search-box">
-      <input
-        type="text"
-        v-model="keyword"
-        @keyup.enter="updateSearchResult(keyword)"
-      />
-    </div>
-    <ul v-if="searchResult.length != 0">
-      <li
-        v-for="(item, index) in searchResult"
-        :key="item"
-        v-bind:class="autoAddClass(index)"
-      >
-        <div
-          class="title"
-          v-on:touchend="addPlaylist(index)"
-          v-on:dblclick="addPlaylist(index)"
-        >
-          {{ item.name }}
-        </div>
-        <div class="artists">
-          <span v-for="artist in item.artists" :key="artist">
-            <router-link :to="{ path: '/artist/' + artist.id }">{{
-              artist.name
-            }}</router-link>
-          </span>
-        </div>
-        <div class="album">
-          <router-link :to="{ path: '/album/' + item.album.id }">
-            {{ item.album.name }}
-          </router-link>
-        </div>
-        <!-- <div class="index">{{autoAddClass(index)}} </div> -->
-      </li>
-    </ul>
+    <searchBar />
+    <el-radio-group v-model="type">
+      <el-radio-button label="song">音乐</el-radio-button>
+      <el-radio-button label="album">专辑</el-radio-button>
+      <el-radio-button label="artist">歌手</el-radio-button>
+      <el-radio-button label="playlist">歌单</el-radio-button>
+    </el-radio-group>
+    <component :is="currentComponent" :datas="searchResult" :type="type" v-if="searchResult.length" />
     <div
       id="loading"
-      v-loading="true"
-      element-loading-background="rgb(255,255,255)"
+      v-if="hasMore"
+      v-loading="hasMore"
+      element-loading-background="rgba(0,0,0,0)"
       style="height: 60px"
-    >
-      loading
-    </div>
+      ref="loading"
+    ></div>
   </main>
 </template>
-<script lang="ts">
-import { Vue } from "vue-class-component";
-import { defineComponent } from "vue";
+<script lang="ts" setup>
+import { ref, reactive, watch, computed } from "vue";
 import { Store } from "vuex";
-import router from "@/router/index";
+import { useRouter, useRoute } from "vue-router";
+import { useIntersectionObserver } from "@vueuse/core";
 import axios from "../axios";
 import store from "@/store";
-import { lchown } from "original-fs";
-export default defineComponent({
-  created() {
-    let page = this.search();
-  },
-  mounted() {},
-  data() {
-    const searchResult: Array<any> = [];
-    return {
-      searchResult: searchResult,
-      keyword: "",
-    };
-  },
-  methods: {
-    async search() {
-      let songCount: number = await this.getData(0);
-      let page: number = Math.ceil(songCount / 30);
-      let offset = 1;
-      let io = new IntersectionObserver(
-        (entry) => {
-          if (entry[0].intersectionRatio > 0.1) {
-            offset += 30;
-            this.getData(offset);
-            if (offset >= songCount - 30) {
-              // io.unobserve(entry[0] as any);
-              let loading = document.querySelector("#loading");
-              loading!.remove();
-              io.disconnect();
-            }
-          }
-        },
-        {
-          threshold: 1.0,
-        }
-      );
-      if (songCount > 30) {
-        io.observe(<HTMLElement>document.querySelector("#loading"));
-      } else {
-        let loading = document.querySelector("#loading");
-        loading!.remove();
-        io.disconnect();
-      }
-    },
-    playMusic(id: number) {
-      this.$store.state.musicID = id;
-    },
-    updateSearchResult(keyword: string) {
-      router.push({ name: "searchresult", params: { keyword: keyword } });
-      this.getData(0);
-    },
-    autoAddClass(index: number) {
-      return index % 2 == 0 ? "bg" : "";
-    },
-    getData(offset: number): Promise<number> {
-      return new Promise((resolve, reject) => {
-        axios
-          .get(
-            `/search?keywords=${this.$route.params.keyword}&type=1&offset=${offset}`
-          )
-          .then((res) => {
-            console.log(res.data);
-            // this.searchResult = res.data.result.songs;
-            for (let i = 0; i < res.data.result.songs.length; i++) {
-              this.searchResult.push(res.data.result.songs[i]);
-            }
-            let songCount: number = res.data.result.songCount;
-            resolve(songCount);
-          })
-          .catch((err) => {
-            console.log(err);
-            reject(0);
-          });
-      });
-    },
-    addPlaylist(index: number) {
-      console.log(index);
-      let artist: Array<string> = [];
-      let songData = {
-        id: this.searchResult[index].id,
-        name: this.searchResult[index].name,
-        artist: artist,
-      };
-      for (let i = 0; i < this.searchResult[index].artists.length; i++) {
-        songData.artist.push(this.searchResult[index].artists[i].name);
-      }
-      store.commit("addPlaylist", songData);
-      store.commit("changePlaylistCursor", store.state.playlistCursor + 1);
-      this.playMusic(this.searchResult[index].id);
-    },
-  },
+import searchBar from "@/components/SearchBar.vue";
+import musicshow from "@/components/Musicshow.vue";
+import dataShow from "@/components/DataShow.vue";
+
+const router = useRouter();
+const route = useRoute();
+let searchResult: Array<any> = reactive([]);
+let keywords = route.params.keyword;
+let laodedCount = 0;
+let inputContent: string = "";
+let loading = ref(null);
+let hasMore = ref(true);
+let type = ref("song");
+
+enum searchType {
+  song = 1,
+  album = 10,
+  artist = 100,
+  playlist = 1000,
+  user = 1002,
+  mv = 1004,
+  lyric = 1006,
+  dj = 1009,
+  video = 1014
+}
+
+let typeName = {
+  song: "单曲",
+  album: "专辑",
+  artist: "歌手",
+  playlist: "歌单",
+  user: "用户",
+  mv: "MV",
+  lyric: "歌词",
+  dj: "电台",
+  video: "视频"
+}
+
+let currentComponent = computed(()=>{
+  if(type.value ==="song"){
+    return musicshow;
+  }else{
+    return dataShow;
+  }
 });
+
+//当页面滑动到接近底部，触发加载事件
+const { stop } = useIntersectionObserver(loading, ([{ isIntersecting }], observerElement) => {
+  search();
+}, { rootMargin: '300px' })
+
+function search() {
+  axios.get(`/search?keywords=${keywords}&offset=${laodedCount}&type=${searchType[type.value]}`).then((res) => {
+    hasMore.value = res.data.result.hasMore;
+    console.log(res.data);
+    for (let data of res.data.result[type.value + "s"]) {
+      searchResult.push(data);
+    }
+    if (!hasMore.value) {
+      stop();
+    }
+  });
+  laodedCount += 30;
+}
+
+watch(type, () => {
+  while (searchResult.length) {
+    searchResult.pop();
+  }
+  laodedCount = 0;
+  search();
+})
+
+search();
 </script>
 <style lang="scss" scoped>
-ul {
-  display: grid;
-  grid-template-columns: 2fr 1fr 1fr;
-  margin-top: 20px;
-  padding: 0;
-  li {
-    display: contents;
-    list-style: none;
-    padding: 0;
-    div {
-      display: inline-block;
-      height: 32px;
-      padding: 0 5px;
-      //   border-bottom: 1px solid lightgray;
-      text-align: left;
-      line-height: 32px;
-      text-overflow: ellipsis;
-      overflow: hidden;
-      white-space: nowrap;
-    }
-    .artists > span:not(:last-of-type)::after {
-      content: "/";
-      margin: 0 2px;
-    }
-  }
-}
-#search-box {
-  input {
-    width: 256px;
-  }
-}
-.bg > div {
-  background-color: var(--background-accent-color);
-}
 a {
   // color: gray;
   color: var(--text-secondly-color);
