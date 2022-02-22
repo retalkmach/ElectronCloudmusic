@@ -4,6 +4,9 @@
 
 网易云音乐的第三方客户端，使用 Vue + Element Plus，既可以结合 electron 打包成 Windows / Linux /Mac OS 平台的应用程序，也可通过自建服务器运行在浏览器端。
 
+## demo
+http://119.91.204.187/music/
+如果打开后出现跨域问题请尝试清除cookie。
 
 ## Thanks
 
