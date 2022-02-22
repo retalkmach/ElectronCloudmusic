@@ -1,6 +1,6 @@
 {
     "name": "electroncloudmusic",
-    "version": "0.15.0",
+    "version": "0.15.4",
     "private": true,
     "scripts": {
         "serve": "vue-cli-service serve",
@@ -13,6 +13,7 @@
     },
     "main": "background.js",
     "dependencies": {
+        "@ant-design/colors": "^6.0.0",
         "@vueuse/core": "^6.1.0",
         "axios": "^0.21.1",
         "core-js": "^3.16.2",

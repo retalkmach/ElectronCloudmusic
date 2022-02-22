@@ -59,7 +59,7 @@ function getSuggest() {
   }
 }
 function setSearchHistory(keyword: string) {
-  let searchHistory = JSON.parse(localStorage.getItem("searchHistory")!);
+  let searchHistory = JSON.parse(localStorage.getItem("searchHistory")||"[]");
   //判断是否有必要修改历史记录
   if (keyword === searchHistory[0]) {
     return false;

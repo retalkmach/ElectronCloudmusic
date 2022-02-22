@@ -7,7 +7,12 @@
       <el-radio-button label="artist">歌手</el-radio-button>
       <el-radio-button label="playlist">歌单</el-radio-button>
     </el-radio-group>
-    <component :is="currentComponent" :datas="searchResult" :type="type" v-if="searchResult.length" />
+    <component
+      :is="currentComponent"
+      :datas="searchResult"
+      :type="type"
+      v-if="searchResult.length"
+    />
     <div
       id="loading"
       v-if="hasMore"
@@ -19,12 +24,11 @@
   </main>
 </template>
 <script lang="ts" setup>
-import { ref, reactive, watch, computed } from "vue";
+import { ref, reactive, watch, computed, onUnmounted, onBeforeUnmount } from "vue";
 import { Store } from "vuex";
 import { useRouter, useRoute } from "vue-router";
 import { useIntersectionObserver } from "@vueuse/core";
 import axios from "../axios";
-import store from "@/store";
 import searchBar from "@/components/SearchBar.vue";
 import musicshow from "@/components/Musicshow.vue";
 import dataShow from "@/components/DataShow.vue";
@@ -63,10 +67,10 @@ let typeName = {
   video: "视频"
 }
 
-let currentComponent = computed(()=>{
-  if(type.value ==="song"){
+let currentComponent = computed(() => {
+  if (type.value === "song") {
     return musicshow;
-  }else{
+  } else {
     return dataShow;
   }
 });
@@ -98,6 +102,9 @@ watch(type, () => {
   search();
 })
 
+onBeforeUnmount(() => {
+  stop();
+})
 search();
 </script>
 <style lang="scss" scoped>

@@ -10,20 +10,30 @@ export default createStore({
     }],
     playlistCursor: 0,
     currentTime: 0,
-    playerMode:'normal',
+    playerMode: 'normal',
     setting: {},
     audioContext: AudioContext,
     audioSource: MediaElementAudioSourceNode,
     initedAudioContext: false,
     musicAnalyser: AnalyserNode,
     defaultSetting: {
-      version: 7,
+      version: 13,
       advanced: {
-        useNativeRange: false,
+        limitFeedback: true
+      },
+      appearance: {
+        autoToogleDarkMode: true
+      },
+      developer: {
+        performanceMonitor: false
+      },
+      visualization: {
+        showFrequency: false,
+        frequencyAnalyserAccuracy: 256,
+        animationType:"Bar chart"
       },
       usePicAsPlayerBackground: true,
       carouselAnimateType: 'traditional',
-      showFrequency: false,
       showTranslatedLyric: true,
       feedback: true,
       autoSign: true,
@@ -65,12 +75,12 @@ export default createStore({
       }
       state.playlist.splice(cursor, 1);
     },
-    switchPlayerMode(state,mode:string){
+    switchPlayerMode(state, mode: string) {
       //检查传入的类型是否正确
-      let type = ['normal','fm'];
-      if(type.some((type)=>{return type === mode})){
+      let type = ['normal', 'fm'];
+      if (type.some((type) => { return type === mode })) {
         state.playerMode = mode;
-      }else{
+      } else {
         state.playerMode = "normal";
       }
     },
@@ -82,7 +92,7 @@ export default createStore({
       localStorage.setItem('setting', JSON.stringify(state.defaultSetting));
     },
     upgradeSetting(state) {
-      const olderSetting = JSON.parse(localStorage.getItem('setting') || '');
+      const olderSetting = JSON.parse(localStorage.getItem('setting') ?? '');
       const mergedSetting = { ...state.defaultSetting, ...olderSetting };
       mergedSetting.version = state.defaultSetting.version;
       state.setting = mergedSetting;

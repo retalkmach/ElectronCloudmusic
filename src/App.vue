@@ -1,74 +1,82 @@
 <template>
   <div id="nav">
-    <router-link to="/">Home</router-link> |
-    <router-link to="/fm">PersonalFM</router-link> |
-    <router-link to="/search">Search</router-link> |
-    <router-link to="/setting">Setting</router-link> |
+    <router-link to="/">Home</router-link>|
+    <router-link to="/fm">PersonalFM</router-link>|
+    <router-link to="/search">Search</router-link>|
+    <router-link to="/setting">Setting</router-link>|
     <router-link to="/user">User</router-link>
   </div>
-  <!-- <player-full-screen v-if="showPlayer" />
-  <router-view v-else :key="$route.fullPath"/> -->
   <router-view />
   <player />
 </template>
 
 <script>
 import player from "@/components/Player.vue";
-import store from "@/store";
+import { useStore } from "vuex";
 import PlayerFullScreen from "./views/PlayerFullScreen.vue";
 import { onBeforeMount, onMounted } from "@vue/runtime-core";
-import { ref } from "vue";
+import { ref, watch } from "vue";
 
 export default {
   name: "app",
   setup() {
-    let setting = {};
-    let systemPerferDarkMde;
+    const store = useStore();
+
+    let systemPerferDarkMode;
     let darkmode;
+
+    // console.log = ()=>{};
+
     //get setting
     function getSetting() {
+      let setting = {};
       // loading setting
       if (localStorage.getItem("setting") == null) {
         console.log("empty setting, will init setting");
         store.commit("initSetting");
       } else {
-        console.log("loading setting");
+        console.log("loading setting");        
         setting = JSON.parse(localStorage.getItem("setting"));
-        if (setting.version < this.$store.state.defaultSetting.version) {
+        console.log(`current setting version is ${setting.version}, latest version is ${store.state.defaultSetting.version}`);
+        if (setting.version < store.state.defaultSetting.version) {
           store.commit("upgradeSetting");
           return;
         }
         store.commit("changeSetting", setting);
       }
     }
-    if (localStorage.getItem("setting") != null) {
-      setting = JSON.parse(localStorage.getItem("setting"));
-    }
     function updateDarkModeStatus() {
-      systemPerferDarkMde =
+      systemPerferDarkMode =
         window.matchMedia &&
         window.matchMedia("(prefers-color-scheme: dark)").matches;
       if (store.state.setting.appearance) {
         darkmode =
           store.state.setting.appearance.autoToogleDarkMode &&
-          systemPerferDarkMde;
+          systemPerferDarkMode;
       } else {
-        darkmode = setting.appearance.autoToogleDarkMode && systemPerferDarkMde;
+        darkmode = systemPerferDarkMode;
       }
       document.querySelector("body").setAttribute("data-darkmode", darkmode);
     }
+
+    //初始化
+    getSetting();
+    //加载主题和播放列表
     updateDarkModeStatus();
-    //当系统切换暗色模式时更新程序暗色模式状态
+    if(localStorage.getItem("playlist")!=null){
+      let playlist =  JSON.parse(localStorage.getItem("playlist"));
+      store.commit("replacePlaylist",{playlist:playlist,cursor:0});
+    };
+    document.documentElement.style.setProperty("--primary-color", localStorage.getItem("theme")||"var(--theme-color-default)");
+
+    //当系统切换暗色模式时更新暗色模式状态
     window
       .matchMedia("(prefers-color-scheme: dark)")
       .addEventListener("change", () => {
         updateDarkModeStatus();
       });
-    return { darkmode };
 
-    onMounted(() => {
-      getSetting();
-    });
+    return { darkmode };
   },
   components: {
     player,
@@ -77,8 +85,10 @@ export default {
 };
 </script>
 
-<style src="./assets/style/custom-element.scss" lang="scss"/>
-<style src="./assets/style/atomic-style.scss"  lang="scss"/>
+<style src="./assets/style/custom-element.scss" lang="scss">
+</style>
+<style src="./assets/style/atomic-style.scss"  lang="scss">
+</style>
 <style lang="scss">
 //import google material-design-icon
 // @import "material-icons/iconfont/material-icons.css";
@@ -104,11 +114,10 @@ p {
 
   a {
     font-weight: bold;
-    text-decoration: none;
     color: var(--text-color);
 
     &.router-link-exact-active {
-      color: #42b983;
+      color: var(--primary-color);
     }
   }
 }
@@ -128,8 +137,17 @@ main {
   overflow-x: hidden;
 }
 a {
-  color: var(--text-color);
+  color: inherit;
+  text-decoration: none;
 }
+//定义主题颜色
+:root {
+  --theme-color-default: #42b983;
+  --theme-color-jiehuazi: #983680;
+  --theme-color-jingtailan: #2775b6;
+  --theme-color-hupohuang: #feba07;
+}
+
 //设置主题颜色
 :root {
   --primary-color: #42b983;
@@ -140,10 +158,10 @@ a {
   --background-color: white;
   --background-accent-color: #f8f8f8;
   --background-high-elevation-color: white;
-  --text-color: #2c3e50;
+  --text-color: #000000df;
   --text-title-color: black;
-  --text-secondly-color: #737980;
-  --text-delimiter-color: #737980bb;
+  --text-secondly-color: #0000009a;
+  --text-delimiter-color: #00000061;
   --border-color: lightgray;
   --border-color-lighter: #dddddd;
   --shadow-color: lightgray;

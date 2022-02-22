@@ -51,10 +51,9 @@
     </div>
     <div id="controller">
       <span id="like" class="material-icons" :data-like="isLike" @click="likeMusic">favorite</span>
-      <!-- <span class="material-icons">favorite</span> -->
       <span id="list" @click="toggleShowPlaylist" class="material-icons">menu</span>
     </div>
-    <transition name="playlist">
+    <transition name="el-zoom-in-bottom">
       <div id="playlist" v-if="showPlaylist">
         <div id="header">
           <h5>播放列表 {{ playlist.length }}首</h5>
@@ -83,6 +82,7 @@ import { Store } from "vuex";
 import store from "@/store";
 import axios from "../axios";
 import { addData } from "@/utils/performance.js"
+import { ElNotification } from "element-plus";
 
 export default defineComponent({
   setup() {
@@ -118,11 +118,10 @@ export default defineComponent({
               index: i,
               listLength: arrNum
             }
-            addData("checkLikeMusic",data);
+            addData("checkLikeMusic", data);
           }
         }
       }
-      // result = this.likeList.some((musicid: number) => this.musicID == musicid)
       return result;
     },
   },
@@ -138,6 +137,7 @@ export default defineComponent({
       showPlaylist: false,
       DOMArray: [Object as any],
       artists: [""],
+      playTime: 0
     };
   },
   watch: {
@@ -147,7 +147,7 @@ export default defineComponent({
     },
     currentTime(newTime) {
       this.$store.state.currentTime = newTime;
-    },
+    }
   },
   methods: {
     playMusic() {
@@ -161,6 +161,7 @@ export default defineComponent({
     },
     updateMusicInfo() {
       const id: number = this.musicID;
+      this.playTime = Date.now();
       // preset played duration
       this.DOMArray[6].innerText = "0:00";
       // update player music address
@@ -173,8 +174,19 @@ export default defineComponent({
           }
         )
         .then((res) => {
-          console.log(res);
-          this.DOMArray[3].setAttribute("src", res.data.data[0].url);
+          if (res.data.data[0].url != null) {
+            this.DOMArray[3].setAttribute("src", res.data.data[0].url);
+          } else {
+            console.log("歌曲无法播放，自动播放下一首");
+            ElNotification({
+              title: "提示",
+              message: "歌曲无法播放，自动播放下一首",
+              position: "bottom-right",
+              offset: 40
+            })
+            this.playNextMusic();
+          }
+
         });
       axios.get(`/song/detail?ids=${id}`).then((res) => {
         const data = res.data.songs[0];
@@ -212,26 +224,17 @@ export default defineComponent({
               },
             ],
           });
-          //适配chromium的媒体控制
-          //@ts-ignore
-          navigator.mediaSession.setActionHandler("play", this.play());
-          //@ts-ignore
-          navigator.mediaSession.setActionHandler("pause", this.pause());
-          //@ts-ignore
-          navigator.mediaSession.setActionHandler("nexttrack", () => { });
-          //@ts-ignore
-          navigator.mediaSession.setActionHandler("previoustrack", () => { });
 
-          //@ts-ignore
-          navigator.mediaSession.setActionHandler(
-            "seekbackward",
-            function () { }
-          );
-          //@ts-ignore
-          navigator.mediaSession.setActionHandler(
-            "seekforward",
-            function () { }
-          );
+          // //@ts-ignore
+          // navigator.mediaSession.setActionHandler(
+          //   "seekbackward",
+          //   function () { }
+          // );
+          // //@ts-ignore
+          // navigator.mediaSession.setActionHandler(
+          //   "seekforward",
+          //   function () { }
+          // );
         }
       });
     },
@@ -243,17 +246,9 @@ export default defineComponent({
     },
     play() {
       this.DOMArray[3].play();
-      // if ("mediaSession" in navigator){
-      //   //@ts-ignore
-      //     navigator.mediaSession.playbackState = "playing"
-      // }
     },
     pause() {
       this.DOMArray[3].pause();
-      // if ("mediaSession" in navigator){
-      //   //@ts-ignore
-      //     navigator.mediaSession.playbackState = "paused"
-      // }
     },
     playNextMusic() {
       this.$store.state.playlistCursor + 1 == this.$store.state.playlist.length
@@ -313,7 +308,13 @@ export default defineComponent({
         this.DOMArray[0].className = "pause";
       });
       this.DOMArray[3].addEventListener("ended", () => {
-        if (this.$store.state.setting.feedback) {
+        if (this.$store.state.playerMode == "fm" && store.state.playlistCursor == store.state.playlist.length - 1) {
+          this.getFMData();
+        }
+        if (this.setting.feedback) {
+          if (this.setting.limitFeedback && Date.now() - this.playTime < duration) {
+            return false;
+          }
           axios
             .post(`/scrobble`, {
               cookie: localStorage.getItem("cookie") || "",
@@ -328,9 +329,17 @@ export default defineComponent({
         }
         this.playNextMusic();
       });
+      //适配chromium的媒体控制
+      //@ts-ignore
+      navigator.mediaSession.setActionHandler("play", this.play());
+      //@ts-ignore
+      navigator.mediaSession.setActionHandler("pause", this.pause());
+      //@ts-ignore
+      navigator.mediaSession.setActionHandler("nexttrack", () => { this.playNextMusic() });
+      //@ts-ignore
+      navigator.mediaSession.setActionHandler("previoustrack", () => { this.playPrevMusic() });
     },
     toggleDisplay() {
-      console.log(this.$route);
       if (this.$route.path === "/playerfullscreen") {
         history.back();
       } else {
@@ -365,22 +374,33 @@ export default defineComponent({
           this.getLikeList();
         });
     },
+    getFMData() {
+      axios.post("/personal_fm", { cookie: localStorage.getItem("cookie") || "" }).then(res => {
+        res.data.data.forEach((music: any) => {
+          let artists: Array<string> = [];
+          music.artists.forEach((artist: any) => {
+            artists.push(artist.name);
+          });
+          let musicInfo = {
+            id: music.id,
+            name: music.name,
+            artist: artists,
+          };
+          store.commit("addPlaylist", musicInfo);
+        });
+      })
+    }
   },
 });
 </script>
 
 <style lang="scss" scoped>
-$primary-color: #42b983;
-$primary-color-hover: #49cc91;
-$primary-color-click: #3da878;
-
 #container {
   position: fixed;
   bottom: 0;
   height: 80px;
   width: 100%;
   background-color: var(--background-color);
-  // backdrop-filter: blur(35px);
   border-top: 1px solid var(--border-color);
 }
 #album-pic {
@@ -398,7 +418,6 @@ $primary-color-click: #3da878;
   display: flex;
   width: 140px;
   height: 100%;
-  // border: 1px solid lightgreen;
   margin-left: 80px;
   justify-content: center;
   align-items: center;
@@ -409,7 +428,7 @@ $primary-color-click: #3da878;
     padding: 0;
     border-radius: 50%;
     border: none;
-    background-color: $primary-color;
+    background-color: var(--primary-color);
     transition: 0.1s;
     .icon {
       width: 32px;
@@ -418,13 +437,10 @@ $primary-color-click: #3da878;
     }
   }
   button:active {
-    // width: 28px;
-    // height: 28px;
-    // margin: 2px;
-    background-color: $primary-color-click;
+    filter: brightness(0.8);
   }
   button:hover {
-    background-color: $primary-color-hover;
+    filter: brightness(1.2);
   }
   #toggle-play-status {
     position: relative;
@@ -489,9 +505,7 @@ $primary-color-click: #3da878;
     position: absolute;
     left: 0;
     top: 28px;
-    // height: 4px;
     width: 100%;
-    // background-color: lightgrey;
     transition: linear 0.25s;
   }
 }
@@ -513,7 +527,6 @@ $primary-color-click: #3da878;
     cursor: pointer;
     user-select: none;
     transition: 0.25s linear;
-    // transform: scale(1.25);
   }
   .material-icons:hover {
     color: var(--primary-color);
@@ -593,21 +606,25 @@ $primary-color-click: #3da878;
 //播放列表过渡动画
 .playlist-enter-from,
 .playlist-leave-to {
+  transform-origin: 50% 100%;
   // transform: translateY(70vh);
-  clip-path: polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%);
-  opacity: 0;
+  transform: scaleY(0);
+  // height: 0;
+  // clip-path: polygon(0% 100%, 100% 100%, 100% 100%, 0% 100%);
 }
 .playlist-enter-active {
-  transition: 0.25s ease-out;
+  transition: 0.25s cubic-bezier(0.215, 0.610, 0.355, 1.000);
 }
 .playlist-leave-active {
-  transition: 0.25s ease-in;
+  transition: 0.25s cubic-bezier(0.550, 0.055, 0.675, 0.190);
 }
 .playlist-enter-to,
 .playlist-leave-from {
+  // height: 70vh;
   // transform: translateY(0);
-  clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
-  opacity: 1;
+  transform-origin: 50% 100%;
+  transform: scaleY(1);
+  // clip-path: polygon(0% 0%, 100% 0%, 100% 100%, 0% 100%);
 }
 // 按钮样式
 #toggle-play-status.play {
@@ -687,7 +704,7 @@ input[type="range"] {
   // overflow-clip-margin: 1px;
   // box-shadow: 0 0 0 1px lightgray;
   // outline: 1px solid lightgray;
-  background-color: $primary-color;
+  background-color: var(--primary-color);
 }
 ::-webkit-slider-thumb {
   position: relative;

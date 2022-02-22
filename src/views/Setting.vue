@@ -10,26 +10,6 @@
         </li>
         <li class="menu-item">
           <span>
-            播放页面显示频谱
-            <el-popover
-              placement="top-start"
-              title="警告"
-              :width="200"
-              trigger="hover"
-              content="目前该功能开启后会消耗大量性能，在低端机型上可能会出现卡顿现象,后续可能有专项优化"
-              :auto-close="8000"
-            >
-              <template #reference>
-                <i class="el-icon-warning-outline"></i>
-              </template>
-            </el-popover>
-          </span>
-          <div class="menu-item-controller">
-            <el-switch v-model="setting.showFrequency" inactive-color="#bbbbbb"></el-switch>
-          </div>
-        </li>
-        <li class="menu-item">
-          <span>
             更新听歌记录
             <el-popover
               placement="top-start"
@@ -88,7 +68,7 @@
         </li>
       </ul>
     </section>
-    <section v-if="setting.appearance">
+    <section>
       <ul>
         <el-divider content-position="left">外观</el-divider>
         <li class="menu-item">
@@ -99,24 +79,95 @@
         </li>
       </ul>
     </section>
-    <section v-if="setting.advanced">
+    <section>
       <ul>
-        <el-divider content-position="left">高级设置</el-divider>
+        <el-divider content-position="left">音频可视化</el-divider>
         <li class="menu-item">
-          <span>原生进度条样式</span>
+          <span>播放页面显示频谱</span>
           <div class="menu-item-controller">
-            <el-switch v-model="setting.advanced.useNativeRange" inactive-color="#bbbbbb"></el-switch>
+            <el-switch v-model="setting.visualization.showFrequency" inactive-color="#bbbbbb"></el-switch>
+          </div>
+        </li>
+        <li class="menu-item">
+          <span>
+            频谱分析精度
+            <el-popover
+              placement="top-start"
+              title="提示"
+              :width="200"
+              trigger="hover"
+              content="显示柱形图动画时推荐选择低或中的精度，折线图选择高或较高的精度，低分辨率屏幕酌情降低精度"
+              :auto-close="8000"
+            >
+              <template #reference>
+                <i class="el-icon-warning-outline"></i>
+              </template>
+            </el-popover>
+          </span>
+          <div class="menu-item-controller">
+            <el-select v-model="setting.visualization.frequencyAnalyserAccuracy" :size="'mini'">
+              <el-option
+                v-for="(key, item) in settingOption.frequencyAnalyserAccuracy"
+                :key="item"
+                :label="key"
+                :value="item"
+              ></el-option>
+            </el-select>
+          </div>
+        </li>
+        <li class="menu-item">
+          <span>频谱动画</span>
+          <div class="menu-item-controller">
+            <el-select v-model="setting.visualization.animationType" :size="'mini'">
+              <el-option
+                v-for="(key, item) in settingOption.animationType"
+                :key="item"
+                :label="key"
+                :value="item"
+              ></el-option>
+            </el-select>
           </div>
         </li>
       </ul>
     </section>
-    <section v-if="setting.developer">
+    <section>
+      <ul>
+        <el-divider content-position="left">高级设置</el-divider>
+        <li class="menu-item">
+          <span>
+            限制更新听歌记录
+            <el-popover
+              placement="top-start"
+              title="提示"
+              :width="200"
+              trigger="hover"
+              content="开启后当歌曲实际播放时间过短时不上传听歌记录"
+              :auto-close="8000"
+            >
+              <template #reference>
+                <i class="el-icon-warning-outline"></i>
+              </template>
+            </el-popover>
+          </span>
+          <div class="menu-item-controller">
+            <el-switch v-model="setting.advanced.limitFeedback" inactive-color="#bbbbbb"></el-switch>
+          </div>
+        </li>
+      </ul>
+    </section>
+    <section>
       <ul>
         <el-divider content-position="left">开发者选项</el-divider>
         <li class="menu-item">
           <span>性能监测</span>
           <div class="menu-item-controller">
             <el-switch v-model="setting.developer.performanceMonitor" inactive-color="#bbbbbb"></el-switch>
+          </div>
+        </li>
+        <li class="menu-item">
+          <span>启用修改主题功能</span>
+          <div class="menu-item-controller">
+            <el-switch v-model="showTheme" inactive-color="#bbbbbb"></el-switch>
           </div>
         </li>
         <li>
@@ -132,77 +183,83 @@
     <section>
       <el-button round type="danger" @click="initSetting">重置设置</el-button>
     </section>
+    <theme v-if="showTheme"></theme>
   </main>
 </template>
-<script lang="ts">
-import { defineComponent } from "vue";
-import store from "@/store";
-import setting_option from "@/assets/data/setting_options.json";
+<script lang="ts" setup>
+import { watch, reactive, ref } from "vue";
+import { useStore } from "vuex";
 import projectConfig from "../../package.json";
+import theme from "@/components/Theme.vue"
 
-export default defineComponent({
-  setup() { },
-  mounted() {
-    this.getSetting();
-  },
-  data() {
-    return {
-      setting: Object as any,
-      settingOption: setting_option,
-      version: projectConfig.version,
-    };
-  },
-  methods: {
-    getSetting() {
-      let setting = {};
-      // loading setting
-      if (localStorage.getItem("setting") == null) {
-        console.log("empty setting, will init setting");
-        store.commit("initSetting");
-        console.log("init setting success");
-      } else {
-        setting = JSON.parse(localStorage.getItem("setting")!);
-        console.log("loading setting");
-        this.setting = setting;
-        store.commit("changeSetting", setting);
-      }
-    },
-    saveSetting(newSetting: object) {
-      store.commit("changeSetting", newSetting);
-      localStorage.setItem("setting", JSON.stringify(newSetting));
-      console.log("setting was save");
-    },
-    initSetting() {
-      //如果直接使用赋值会因为浅拷贝导致后面修改设置会污染到store的defaultSetting，所以使用深拷贝来获取初始设置
-      let defaultSetting = JSON.stringify(store.state.defaultSetting);
-      store.commit("initSetting");
-      this.setting = JSON.parse(defaultSetting);
-      // this.setting = Object.create(store.state.defaultSetting);
-      // this.setting = store.state.defaultSetting;
-      // this.saveSetting(store.state.defaultSetting);
-    },
-    backupSetting() {
-      localStorage.setItem("backupSetting", JSON.stringify(this.setting));
-    },
-    restoreSetting() {
-      if (localStorage.getItem("backupSetting") != null) {
-        this.setting = JSON.parse(localStorage.getItem("backupSetting")!);
-        if (this.setting.version < store.state.defaultSetting.version) {
-          store.commit("upgradeSetting");
-        }
-      }
+const store = useStore();
+let setting: any = ref({});
+const version = projectConfig.version;
+let showTheme = ref(false);
+
+function getSetting() {
+  // loading setting
+  if (localStorage.getItem("setting") == null) {
+    console.log("empty setting, will init setting");
+    store.commit("initSetting");
+    console.log("init setting success");
+  } else {
+    setting.value = JSON.parse(localStorage.getItem("setting")!);
+    console.log("loading setting");
+    store.commit("changeSetting", setting);
+  }
+}
+function saveSetting(newSetting: object) {
+  store.commit("changeSetting", newSetting);
+  localStorage.setItem("setting", JSON.stringify(newSetting));
+  console.log("setting was save");
+}
+function initSetting() {
+  //如果直接使用赋值会因为浅拷贝导致后面修改设置会污染到store的defaultSetting，所以使用深拷贝来获取初始设置
+  let defaultSetting = JSON.stringify(store.state.defaultSetting);
+  store.commit("initSetting");
+  setting.value = JSON.parse(defaultSetting);
+}
+function backupSetting() {
+  localStorage.setItem("backupSetting", JSON.stringify(setting));
+}
+function restoreSetting() {
+  if (localStorage.getItem("backupSetting") != null) {
+    setting.value = JSON.parse(localStorage.getItem("backupSetting")!);
+    if (setting.version < store.state.defaultSetting.version) {
+      store.commit("upgradeSetting");
     }
+  }
+}
+//初始化组件
+getSetting();
+watch(setting, (newSetting) => {
+  saveSetting(newSetting);
+}, { deep: true })
+
+//设置选项
+const settingOption = {
+  "carouselAnimateType": {
+    "traditional": "传统",
+    "fade": "渐隐渐显",
+    "pullpushdoor": "推拉门"
   },
-  watch: {
-    setting: {
-      handler(newSetting) {
-        console.log("setting was change");
-        this.saveSetting(newSetting);
-      },
-      deep: true,
-    },
+  "playBitrate": {
+    "128000": "流畅播放",
+    "320000": "标准音质",
+    "999000": "无损"
   },
-});
+  "frequencyAnalyserAccuracy": {
+    128: "低",
+    256: "标准",
+    512: "高",
+    1024: "较高"
+  },
+  "animationType": {
+    "Bar chart": "柱形图（默认）",
+    "line chart": "折线图"
+  }
+}
 </script>
 
 <style lang="scss" scoped>

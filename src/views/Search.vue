@@ -120,7 +120,7 @@ export default defineComponent({
     margin: 4px 0;
     padding: 5px;
     span {
-      margin: 0 2px;
+      margin: 2px;
       cursor: pointer;
     }
   }

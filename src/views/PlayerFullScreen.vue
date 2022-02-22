@@ -44,7 +44,6 @@
 <script lang="ts">
 import { Options, Vue } from "vue-class-component";
 import { defineComponent, onMounted, onUnmounted } from "vue";
-import { Store } from "vuex";
 import axios from "../axios";
 export default defineComponent({
   mounted() {
@@ -56,7 +55,7 @@ export default defineComponent({
     let lyric = <HTMLElement>document.querySelector("#lyric");
     this.layoutData.lyricHeight = lyric.offsetWidth;
     this.layoutData.windowWidth = document.body.offsetWidth;
-    this.layoutData.gutter = (this.layoutData.windowWidth - 128 * 5) / 128 / 2;
+    this.layoutData.gutter = (this.layoutData.windowWidth - this.audioDataArr.length * 5) / this.audioDataArr.length;
     // this.debounceSwitchLyric(false);
     //add listener to change lyric
     // document.querySelector("#container>audio")?.addEventListener("play",()=>{
@@ -67,12 +66,12 @@ export default defineComponent({
     //   this.debounceSwitchLyric(false);
     // });
   },
-  unmounted() {
+  beforeUnmount() {
     // window.cancelAnimationFrame(this.animation);
     window.clearInterval(this.animation);
   },
   data() {
-    let audioDataArr: Uint8Array = new Uint8Array(256);
+    let audioDataArr: Uint8Array = new Uint8Array(this.$store.state.setting.visualization.frequencyAnalyserAccuracy / 2);
     let lyric: Array<any> = [];
     let artist = { name: String, id: Number };
     let musicInfo = {
@@ -85,7 +84,6 @@ export default defineComponent({
       windowWidth: 0,
       gutter: 0
     };
-    // let musicAnalyser: AnalyserNode = new AudioContext().createAnalyser();
     return {
       lyric: lyric,
       rowlyric: Object as any,
@@ -253,8 +251,9 @@ export default defineComponent({
         let lyric = document.querySelector("#lyric")!;
         let offset = DOM.offsetTop;
         offset > this.layoutData.lyricHeight / 2
-          ? (lyric.scrollTop = offset - this.layoutData.lyricHeight / 2 + 30)
+          ? (lyric.scrollTo({ top: offset - this.layoutData.lyricHeight / 2 + 30, behavior: "smooth" }))
           : false;
+        // DOM.scrollIntoView({block:"center",behavior:"smooth"});
       }
     },
     preventScrollLyric() {
@@ -285,7 +284,7 @@ export default defineComponent({
       }
     },
     initMusicAnalyser() {
-      if (this.setting.showFrequency == false) {
+      if (this.setting.visualization.showFrequency == false) {
         return false;
       }
       if (!this.$store.state.initedAudioContext) {
@@ -300,8 +299,8 @@ export default defineComponent({
         this.$store.state.musicAnalyser.connect(
           this.$store.state.audioContext.destination
         );
-        this.$store.state.musicAnalyser.fftSize = 256;
       }
+      this.$store.state.musicAnalyser.fftSize = this.setting.visualization.frequencyAnalyserAccuracy;
       console.log(this.$store.state.musicAnalyser)
       this.animation = window.setInterval(() => {
         this.freshMusicFrequency();
@@ -311,14 +310,29 @@ export default defineComponent({
       let frequency = <HTMLCanvasElement>document.querySelector("#frequency")!;
       let ctx = frequency.getContext("2d")!;
       ctx.fillStyle = "lightskyblue";
+      ctx.strokeStyle = "lightskyblue";
+      ctx.lineWidth = 2;
       this.$store.state.musicAnalyser.getByteFrequencyData(this.audioDataArr);
       let data = this.audioDataArr;
       let height = this.layoutData.lyricHeight / 0.4;
       ctx.clearRect(0, 0, this.layoutData.windowWidth, height);
-      let startcoo = -5;
-      for (let i = 0; i < data.length; i++) {
-        startcoo += 5 + this.layoutData.gutter
-        ctx.fillRect(startcoo, height, 5, -1 * data[i]);
+      switch (this.setting.visualization.animationType) {
+        case "Bar chart":
+          let startcoo = -5;
+          for (let i = 0; i < data.length; i++) {
+            startcoo += 5 + this.layoutData.gutter
+            ctx.fillRect(startcoo, height, 5, -1 * data[i]);
+          };
+          break;
+        case "line chart":
+          ctx.beginPath();
+          ctx.moveTo(0,(height - data[0]));
+          let coordinatex = 0;
+          for (let i = 0; i < data.length; i++) {
+            coordinatex += 5 + this.layoutData.gutter;
+            ctx.lineTo(coordinatex,(height - data[i]));
+          };
+          ctx.stroke();
       }
     },
   },
@@ -330,7 +344,7 @@ export default defineComponent({
 }
 #info {
   height: 60px;
-  p{
+  p {
     max-width: 100%;
     white-space: nowrap;
     overflow: hidden;
@@ -341,19 +355,16 @@ export default defineComponent({
     font-size: 1.5em;
   }
   :not(#name) {
-    color: gray;
+    color: var(--text-secondly-color);
   }
   .artist:not(:last-child)::after {
     content: "/";
     margin: 0 2px;
-    color: lightgray;
+    color: var(--text-delimiter-color);
   }
   .delimiter {
     margin: 0 8px;
-    color:var(--text-delimiter-color);
-  }
-  a {
-    text-decoration: none;
+    color: var(--text-delimiter-color) !important;
   }
 }
 #imgbox {
@@ -373,7 +384,7 @@ export default defineComponent({
   height: 45vh;
   overflow-y: scroll;
   overflow-x: hidden;
-  scroll-behavior: smooth;
+  // scroll-behavior: smooth;
   ul {
     position: relative;
     max-width: 45vh;

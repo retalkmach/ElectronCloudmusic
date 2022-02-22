@@ -4,7 +4,7 @@
       <ul>
         <li v-for="(item, index) in banner" :key="item" class="carousel-item">
           <div class="img-container">
-            <img :src="item.imageUrl" alt="" @click="processJump(index)" />
+            <img :src="item.imageUrl" alt @click="processJump(index)" />
           </div>
         </li>
       </ul>
@@ -16,8 +16,8 @@
           v-for="item in banner.length"
           :key="item"
           @click="
-            toggleCarousel(item - 1);
-            initTimer();
+          toggleCarousel(item - 1);
+          initTimer();
           "
         ></li>
       </ul>
@@ -40,12 +40,11 @@ export default defineComponent({
     }, 1000);
     this.getBanner();
     this.isBigScreen = document.body.clientWidth > 1024 ? true : false;
-    window.addEventListener("resize", () => {
-      this.isBigScreen = document.body.clientWidth > 1024 ? true : false;
-    });
-  },
+    window.addEventListener("resize", this.checkIsBigScreen);
+    },
   unmounted() {
     clearInterval(this.carouselTimer);
+    window.removeEventListener("resize",this.checkIsBigScreen)
   },
   data() {
     let banner: Array<any> = [];
@@ -64,6 +63,9 @@ export default defineComponent({
     };
   },
   methods: {
+    checkIsBigScreen() {
+      this.isBigScreen = document.body.clientWidth > 1024 ? true : false;
+    },
     getBanner() {
       axios.get("/banner").then((res) => {
         for (let i = 0; i < res.data.banners.length; i++) {
@@ -378,7 +380,7 @@ export default defineComponent({
       li.prev.reverse {
         animation: animate-prev-reverse 0.75s linear;
       }
-      li.abandoned.reverse{
+      li.abandoned.reverse {
         animation: animate-abandoned-reverse 0.75s linear;
         z-index: -2;
       }

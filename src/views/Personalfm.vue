@@ -29,12 +29,7 @@ export default defineComponent({
             };
             fmPlaylist.push(musicInfo)
           });
-          console.log(fmPlaylist);          
-          // for(let i=0;i<res.data.data.length;i++){
-          //   let musicInfo = {
-
-          //   }
-          // }
+          console.log(fmPlaylist); 
           store.commit("switchPlayerMode", "fm");
           store.commit("replacePlaylist", {
             playlist: fmPlaylist,
